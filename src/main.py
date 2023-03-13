@@ -1,4 +1,5 @@
 from pyspark.sql.types import StructType
+from pyspark.sql import SparkSession
 from datetime import datetime
 from pytz import timezone
 from pyspark.sql.functions import (
@@ -7,12 +8,15 @@ from pyspark.sql.functions import (
     input_file_name,
     from_utc_timestamp,
     to_date,
-    when, 
+    when,
     DataFrame,
-    current_date
+    current_date,
 )
 
-def read_file_from_src_path(src_path: str, filename: str, schema: StructType):
+
+def read_file_from_src_path(
+    spark: SparkSession, src_path: str, filename: str, schema: StructType
+):
     """Reads input csv files from source file path (s3) to databricks"""
     df = (
         spark.read.format("csv")
@@ -24,6 +28,7 @@ def read_file_from_src_path(src_path: str, filename: str, schema: StructType):
     )
     df.printSchema()
     return df
+
 
 def add_required_columns(df: DataFrame):
     """Adds required columns to input DataFrame"""
@@ -45,7 +50,8 @@ def add_required_columns(df: DataFrame):
     target_df.printSchema()
     return target_df
 
-def file_exists(src_file_path: str, filename: str) -> dict:
+
+def file_exists(spark: SparkSession, src_file_path: str, filename: str) -> dict:
     return_object = {"filename": filename, "file_exists": False, "schema": None}
     try:
         df = (
@@ -64,6 +70,7 @@ def file_exists(src_file_path: str, filename: str) -> dict:
     except Exception as e:
         print(e)
         return return_object
+
 
 def compare_schema(inferred_schema: list, defined_schema: list, filename: str) -> dict:
     valid_schema = False
@@ -101,6 +108,7 @@ def compare_schema(inferred_schema: list, defined_schema: list, filename: str) -
     except Exception as e:
         print(e)
         return return_object
+
 
 def convert_schema_to_list(schema: StructType) -> list:
     result = [i.name for i in schema]
