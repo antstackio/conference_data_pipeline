@@ -57,4 +57,26 @@ virtual_attendee_target_df = add_required_columns(virtual_attendee_df, current_u
 
 # COMMAND ----------
 
+event_df.write.format("delta").mode(MODE).saveAsTable(f"{DB}.event")
 
+# COMMAND ----------
+
+session_df.write.format("delta").mode(MODE).saveAsTable(f"{DB}.session")
+
+# COMMAND ----------
+
+inperson_attendee_df.write.format("delta").mode(MODE).saveAsTable(
+    f"{DB}.in_person_attendee"
+)
+
+# COMMAND ----------
+
+virtual_attendee_df.write.format("delta").mode(MODE).saveAsTable(
+    f"{DB}.virtual_attendee"
+)
+
+# COMMAND ----------
+
+polling_questions_df.write.format("delta").mode(MODE).saveAsTable(
+    f"{DB}.polling_questions"
+)
