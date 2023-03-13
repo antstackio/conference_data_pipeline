@@ -1,4 +1,4 @@
-from pyspark.sql.types import StructType
+from pyspark.sql.types import StructType, StringType
 from pyspark.sql import SparkSession
 from datetime import datetime
 from pytz import timezone
@@ -30,15 +30,8 @@ def read_file_from_src_path(
     return df
 
 
-def add_required_columns(df: DataFrame):
+def add_required_columns(df: DataFrame, current_user: str):
     """Adds required columns to input DataFrame"""
-    current_user = (
-        dbutils.notebook.entry_point.getDbutils()
-        .notebook()
-        .getContext()
-        .userName()
-        .get()
-    )
     target_df = (
         df.withColumn("file_name", lit(input_file_name()))
         .withColumn("create_user", lit(current_user))
