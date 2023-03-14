@@ -15,7 +15,15 @@ event_df = read_file_from_src_path(spark, src_file_path, EVENT, schema=event_sch
 
 # COMMAND ----------
 
+display(event_df)
+
+# COMMAND ----------
+
 session_df = read_file_from_src_path(spark, src_file_path, SESSION, session_schema)
+
+# COMMAND ----------
+
+display(session_df)
 
 # COMMAND ----------
 
@@ -23,11 +31,23 @@ inperson_attendee_df = read_file_from_src_path(spark, src_file_path, INPERSONATT
 
 # COMMAND ----------
 
+display(inperson_attendee_df)
+
+# COMMAND ----------
+
 virtual_attendee_df = read_file_from_src_path(spark, src_file_path, VIRTUALATTENDEE, attendee_schema)
 
 # COMMAND ----------
 
-poll_question_df = read_file_from_src_path(spark, src_file_path, POLLQUESTIONS, poll_question_schema)
+display(virtual_attendee_df)
+
+# COMMAND ----------
+
+poll_questions_df = read_file_from_src_path(spark, src_file_path, POLLQUESTIONS, poll_question_schema)
+
+# COMMAND ----------
+
+display(poll_question_df)
 
 # COMMAND ----------
 
@@ -57,26 +77,39 @@ virtual_attendee_target_df = add_required_columns(virtual_attendee_df, current_u
 
 # COMMAND ----------
 
-event_df.write.format("delta").mode(MODE).saveAsTable(f"{DB}.event")
+questions_target_df = add_required_columns(poll_question_df, current_user)
 
 # COMMAND ----------
 
-session_df.write.format("delta").mode(MODE).saveAsTable(f"{DB}.session")
+event_target_df.write.format("delta").mode(MODE).saveAsTable(f"conference_raw.event")
 
 # COMMAND ----------
 
-inperson_attendee_df.write.format("delta").mode(MODE).saveAsTable(
-    f"{DB}.in_person_attendee"
+session_target_df.write.format("delta").mode(MODE).saveAsTable(f"conference_raw.session")
+
+# COMMAND ----------
+
+inperson_attendee_target_df.write.format("delta").mode(MODE).saveAsTable(
+    f"conference_raw.in_person_attendee"
 )
 
 # COMMAND ----------
 
-virtual_attendee_df.write.format("delta").mode(MODE).saveAsTable(
-    f"{DB}.virtual_attendee"
+virtual_attendee_target_df.write.format("delta").mode(MODE).saveAsTable(
+    f"conference_raw.virtual_attendee"
 )
 
 # COMMAND ----------
 
-polling_questions_df.write.format("delta").mode(MODE).saveAsTable(
-    f"{DB}.polling_questions"
+questions_target_df.write.format("delta").mode(MODE).saveAsTable(
+    f"conference_raw.polling_questions"
 )
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT * FROM conference_raw.event;
+
+# COMMAND ----------
+
+

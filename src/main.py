@@ -1,4 +1,4 @@
-from pyspark.sql.types import StructType, StringType
+from pyspark.sql.types import StructType, StringType, DateType
 from pyspark.sql import SparkSession
 from datetime import datetime
 from pytz import timezone
@@ -37,7 +37,7 @@ def add_required_columns(df: DataFrame, current_user: str):
         .withColumn("create_user", lit(current_user))
         .withColumn("create_date", lit(current_date()))
         .withColumn("modified_user", lit(None).cast(StringType()))
-        .withColumn("modified_date", lit(None).cast(TimestampType()))
+        .withColumn("modified_date", lit(None).cast(DateType()))
         .withColumn("is_processed", lit(False))
     )
     target_df.printSchema()
@@ -106,3 +106,17 @@ def compare_schema(inferred_schema: list, defined_schema: list, filename: str) -
 def convert_schema_to_list(schema: StructType) -> list:
     result = [i.name for i in schema]
     return result
+
+
+def convert_date_object(
+    df: DataFrame, column_name: str, current_date_format: str
+) -> DataFrame:
+    target_df = df.withColumn(
+        column_name,
+        when(
+            to_date(df[column_name], current_date_format).isNotNull(),
+            to_date(df[column_name], current_date_format),
+        ).otherwise(to_date(df[column_name])),
+    )
+
+    return target_df
