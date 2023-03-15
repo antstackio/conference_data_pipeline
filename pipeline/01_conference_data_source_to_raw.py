@@ -47,7 +47,7 @@ poll_questions_df = read_file_from_src_path(spark, src_file_path, POLLQUESTIONS,
 
 # COMMAND ----------
 
-display(poll_question_df)
+display(poll_questions_df.head(5))
 
 # COMMAND ----------
 
@@ -77,7 +77,7 @@ virtual_attendee_target_df = add_required_columns(virtual_attendee_df, current_u
 
 # COMMAND ----------
 
-questions_target_df = add_required_columns(poll_question_df, current_user)
+questions_target_df = add_required_columns(poll_questions_df, current_user)
 
 # COMMAND ----------
 

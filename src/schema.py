@@ -70,6 +70,7 @@ poll_question_schema = StructType(
         StructField("poll_question", StringType(), True),
         StructField("poll_option", StringType(), True),
         StructField("attendee_registration_no", StringType(), True),
+        StructField("option_text", StringType(), True),
         StructField("session_title", StringType(), True),
     ]
 )
