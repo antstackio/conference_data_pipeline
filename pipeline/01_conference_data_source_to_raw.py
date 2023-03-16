@@ -94,23 +94,51 @@ current_user = (
 
 # COMMAND ----------
 
-event_target_df = add_required_columns(event_df, current_user)
+try:
+    event_target_df = add_required_columns(event_df, current_user)
+except Exception as e:
+    print(e)
+    failed_to_add.append(True)
 
 # COMMAND ----------
 
-session_target_df = add_required_columns(session_df, current_user)
+try:
+    session_target_df = add_required_columns(session_df, current_user)
+except Exception as e:
+    print(e)
+    failed_to_add.append(True)
 
 # COMMAND ----------
 
-inperson_attendee_target_df = add_required_columns(inperson_attendee_df, current_user)
+try:
+    inperson_attendee_target_df = add_required_columns(inperson_attendee_df, current_user)
+except Exception as e:
+    print(e)
+    failed_to_add.append(True)
 
 # COMMAND ----------
 
-virtual_attendee_target_df = add_required_columns(virtual_attendee_df, current_user)
+try:
+    virtual_attendee_target_df = add_required_columns(virtual_attendee_df, current_user)
+except Exception as e:
+    print(e)
+    failed_to_add.append(True)
 
 # COMMAND ----------
 
-questions_target_df = add_required_columns(poll_questions_df, current_user)
+try:
+    questions_target_df = add_required_columns(poll_questions_df, current_user)
+except Exception as e:
+    print(e)
+    failed_to_add.append(True)
+
+# COMMAND ----------
+
+if any(failed_to_add):
+    dbutils.jobs.taskValues.set(key="execute_refined_layer", value=False)
+    dbutils.notebook.exit("Failed to load one or more input files exiting the notebook!")
+else:
+  dbutils.jobs.taskValues.set(key="execute_refined_layer", value=True)
 
 # COMMAND ----------
 
