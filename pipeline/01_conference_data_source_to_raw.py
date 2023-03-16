@@ -169,7 +169,27 @@ questions_target_df.write.format("delta").mode(MODE).saveAsTable(
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT * FROM conference_raw.event;
+# MAGIC SELECT count(*) FROM conference_raw.event;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT count(*) FROM conference_raw.session;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT count(*) FROM conference_raw.in_person_attendee;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT count(*) FROM conference_raw.virtual_attendee;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT count(*) FROM conference_raw.polling_questions;
 
 # COMMAND ----------
 
