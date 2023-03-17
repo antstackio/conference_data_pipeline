@@ -193,4 +193,4 @@ questions_target_df.write.format("delta").mode(MODE).saveAsTable(
 
 # COMMAND ----------
 
-
+# MAGIC %sql
