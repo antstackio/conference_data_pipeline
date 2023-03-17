@@ -5,7 +5,6 @@ import sys
 
 repo_name = "conference_data_pipeline"
 
-# notebook setup.
 # Get the path to this notebook, for example "/Workspace/Repos/{username}/{repo-name}".
 notebook_path = dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get()
 
