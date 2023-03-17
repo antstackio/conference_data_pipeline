@@ -6,6 +6,7 @@ from pyspark.sql.types import (
     StringType,
     DateType,
     TimestampType,
+    FloatType
 )
 
 dbc_env = os.getenv("dbc_environment")
@@ -53,7 +54,7 @@ session_schema = StructType(
     ]
 )
 
-attendee_schema = StructType(
+inperson_attendee_schema = StructType(
     [   
         StructField("registration_no", StringType(), True),
         StructField("first_name", StringType(), True),
@@ -65,6 +66,19 @@ attendee_schema = StructType(
     ]
 )
 
+virtual_attendee_schema = StructType(
+    [   
+        StructField("registration_no", StringType(), True),
+        StructField("first_name", StringType(), True),
+        StructField("last_name", StringType(), True),
+        StructField("email_address", StringType(), True),
+        StructField("job_role", StringType(), True),
+        StructField("state", StringType(), True),
+        StructField("session_title", StringType(), True),
+        StructField("login_time", FloatType(), True),
+        StructField("logout_time", FloatType(), True),
+    ]
+)
 poll_question_schema = StructType(
     [
         StructField("poll_question", StringType(), True),
