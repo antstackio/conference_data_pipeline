@@ -41,7 +41,7 @@ display(session_df)
 # COMMAND ----------
 
 try:
-    inperson_attendee_df = read_file_from_src_path(spark, src_file_path, INPERSONATTENDEE, attendee_schema)
+    inperson_attendee_df = read_file_from_src_path(spark, src_file_path, INPERSONATTENDEE, inperson_attendee_schema)
 except Exception as e:
     print(e)
     failed_to_load.append(True)
@@ -53,7 +53,7 @@ display(inperson_attendee_df)
 # COMMAND ----------
 
 try:
-    virtual_attendee_df = read_file_from_src_path(spark, src_file_path, VIRTUALATTENDEE, attendee_schema)
+    virtual_attendee_df = read_file_from_src_path(spark, src_file_path, VIRTUALATTENDEE, virtual_attendee_schema)
 except Exception as e:
     print(e)
     failed_to_load.append(True)
@@ -193,4 +193,4 @@ questions_target_df.write.format("delta").mode(MODE).saveAsTable(
 
 # COMMAND ----------
 
-
+# MAGIC %sql
