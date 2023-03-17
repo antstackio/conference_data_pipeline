@@ -11,7 +11,16 @@ dbutils = DBUtils(spark)
 
 # COMMAND ----------
 
-event_df = read_file_from_src_path(spark, src_file_path, EVENT, schema=event_schema)
+failed_to_load: list = []
+failed_to_add: list = []
+
+# COMMAND ----------
+
+try:
+    event_df = read_file_from_src_path(spark, src_file_path, EVENT, schema=event_schema)
+except Exception as e:
+    print(e)
+    failed_to_load.append(True)
 
 # COMMAND ----------
 
@@ -19,7 +28,11 @@ display(event_df)
 
 # COMMAND ----------
 
-session_df = read_file_from_src_path(spark, src_file_path, SESSION, session_schema)
+try:
+    session_df = read_file_from_src_path(spark, src_file_path, SESSION, session_schema)
+except Exception as e:
+    print(e)
+    failed_to_load.append(True)
 
 # COMMAND ----------
 
@@ -27,7 +40,11 @@ display(session_df)
 
 # COMMAND ----------
 
-inperson_attendee_df = read_file_from_src_path(spark, src_file_path, INPERSONATTENDEE, attendee_schema)
+try:
+    inperson_attendee_df = read_file_from_src_path(spark, src_file_path, INPERSONATTENDEE, inperson_attendee_schema)
+except Exception as e:
+    print(e)
+    failed_to_load.append(True)
 
 # COMMAND ----------
 
@@ -35,7 +52,11 @@ display(inperson_attendee_df)
 
 # COMMAND ----------
 
-virtual_attendee_df = read_file_from_src_path(spark, src_file_path, VIRTUALATTENDEE, attendee_schema)
+try:
+    virtual_attendee_df = read_file_from_src_path(spark, src_file_path, VIRTUALATTENDEE, virtual_attendee_schema)
+except Exception as e:
+    print(e)
+    failed_to_load.append(True)
 
 # COMMAND ----------
 
@@ -43,7 +64,19 @@ display(virtual_attendee_df)
 
 # COMMAND ----------
 
-poll_questions_df = read_file_from_src_path(spark, src_file_path, POLLQUESTIONS, poll_question_schema)
+try:
+    poll_questions_df = read_file_from_src_path(spark, src_file_path, POLLQUESTIONS, poll_question_schema)
+except Exception as e:
+    print(e)
+    failed_to_load.append(True)
+
+# COMMAND ----------
+
+if any(failed_to_load):
+  dbutils.jobs.taskValues.set(key="execute_refined_layer", value=False)
+  dbutils.notebook.exit("Failed to load one or more input files exiting the notebook!")
+else:
+  dbutils.jobs.taskValues.set(key="execute_refined_layer", value=True)
 
 # COMMAND ----------
 
@@ -61,23 +94,51 @@ current_user = (
 
 # COMMAND ----------
 
-event_target_df = add_required_columns(event_df, current_user)
+try:
+    event_target_df = add_required_columns(event_df, current_user)
+except Exception as e:
+    print(e)
+    failed_to_add.append(True)
 
 # COMMAND ----------
 
-session_target_df = add_required_columns(session_df, current_user)
+try:
+    session_target_df = add_required_columns(session_df, current_user)
+except Exception as e:
+    print(e)
+    failed_to_add.append(True)
 
 # COMMAND ----------
 
-inperson_attendee_target_df = add_required_columns(inperson_attendee_df, current_user)
+try:
+    inperson_attendee_target_df = add_required_columns(inperson_attendee_df, current_user)
+except Exception as e:
+    print(e)
+    failed_to_add.append(True)
 
 # COMMAND ----------
 
-virtual_attendee_target_df = add_required_columns(virtual_attendee_df, current_user)
+try:
+    virtual_attendee_target_df = add_required_columns(virtual_attendee_df, current_user)
+except Exception as e:
+    print(e)
+    failed_to_add.append(True)
 
 # COMMAND ----------
 
-questions_target_df = add_required_columns(poll_questions_df, current_user)
+try:
+    questions_target_df = add_required_columns(poll_questions_df, current_user)
+except Exception as e:
+    print(e)
+    failed_to_add.append(True)
+
+# COMMAND ----------
+
+if any(failed_to_add):
+    dbutils.jobs.taskValues.set(key="execute_refined_layer", value=False)
+    dbutils.notebook.exit("Failed to load one or more input files exiting the notebook!")
+else:
+  dbutils.jobs.taskValues.set(key="execute_refined_layer", value=True)
 
 # COMMAND ----------
 
@@ -108,8 +169,28 @@ questions_target_df.write.format("delta").mode(MODE).saveAsTable(
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT * FROM conference_raw.event;
+# MAGIC SELECT count(*) FROM conference_raw.event;
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC SELECT count(*) FROM conference_raw.session;
 
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT count(*) FROM conference_raw.in_person_attendee;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT count(*) FROM conference_raw.virtual_attendee;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT count(*) FROM conference_raw.polling_questions;
+
+# COMMAND ----------
+
+# MAGIC %sql
