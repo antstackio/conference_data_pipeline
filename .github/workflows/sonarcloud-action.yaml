@@ -43,7 +43,10 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.python.coverage.reportPaths=coverage-reports/coverage-1.xml
+            -Dsonar.python.coverage.reportPaths=coverage-reports/coverage.lcov
+            -Dsonar.organization=antstackio
+            -Dsonar.projectKey=antstackio_conference_data_pipeline
+            -Dsonar.host.url=https://sonarcloud.io
       - name: Cleanup the Coverage State Files
         uses: databricks/run-notebook@v0.0.3
         with:
