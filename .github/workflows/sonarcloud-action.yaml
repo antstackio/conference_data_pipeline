@@ -41,6 +41,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.python.coverage.reportPaths=coverage-reports/coverage-1.xml
       - name: Cleanup the Coverage State Files
         uses: databricks/run-notebook@v0.0.3
         with:
