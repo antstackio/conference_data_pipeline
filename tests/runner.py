@@ -19,7 +19,7 @@ print(os.getcwd())
 sys.dont_write_bytecode = True
 
 # Run pytest.
-retcode = pytest.main([".", "-v", "-p", "no:cacheprovider", "--cov","--cov-report","term","--cov-report", f"lcov:{os.getcwd()}/coverage-reports/coverage.lcov"])
+retcode = pytest.main([".", "-v", "-p", "no:cacheprovider", "--cov","--cov-report","term","--cov-report", f"xml:{os.getcwd()}/coverage-reports/coverage.xml"])
 
 # Fail the cell execution if there are any test failures.
 assert retcode == 0, "The pytest invocation failed. See the log for details."

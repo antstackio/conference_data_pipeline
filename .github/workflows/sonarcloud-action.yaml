@@ -43,7 +43,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.python.coverage.reportPaths=coverage-reports/coverage.lcov
+            -Dsonar.python.coverage.reportPaths=coverage-reports/coverage.xml
             -Dsonar.organization=antstackio
             -Dsonar.projectKey=antstackio_conference_data_pipeline
             -Dsonar.host.url=https://sonarcloud.io
