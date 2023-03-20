@@ -44,17 +44,3 @@ jobs:
         with:
           args: >
             -Dsonar.python.coverage.reportPaths=coverage-reports/coverage-1.xml
-      - name: Cleanup the Coverage State Files
-        uses: databricks/run-notebook@v0.0.3
-        with:
-          workspace-notebook-path: "/Repos/${{ secrets.DATABRICKS_REPO_ROOT }}/conference_data_pipeline/tests/coverage-cleanup"
-          existing-cluster-id: "0923-083000-9wrpjw0r"
-          # Grant all users view permission on the notebook results
-          databricks-token: ${{ secrets.DATABRICKS_TOKEN }}
-          access-control-list-json: >
-            [
-              {
-                "group_name": "users",
-                "permission_level": "CAN_VIEW"
-              }
-            ]
