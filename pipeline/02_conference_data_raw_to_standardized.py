@@ -164,4 +164,41 @@ print('Total attendee count', attendee.count(), sep=' :: ')
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ### Load
+
+# COMMAND ----------
+
+import os
+
+# COMMAND ----------
+
+os.listdir('../SqlDBM/src/Tables/')
+
+# COMMAND ----------
+
+with open('../SqlDBM/src/Tables/conference_refined.event.sql') as file:
+    ddl = file.read()
+    spark.sql(ddl)
+
+# COMMAND ----------
+
+with open('../SqlDBM/src/Tables/conference_refined.session.sql') as file:
+    ddl = file.read()
+    spark.sql(ddl)
+
+# COMMAND ----------
+
+with open('../SqlDBM/src/Tables/conference_refined.registrant.sql') as file:
+    ddl = file.read()
+    spark.sql(ddl)
+
+# COMMAND ----------
+
+with open('../SqlDBM/src/Tables/conference_refined.polling_questions.sql') as file:
+    ddl = file.read()
+    spark.sql(ddl)
+
+# COMMAND ----------
+
 
