@@ -16,3 +16,6 @@ jobs:
         run: |
           url="$DATABRICKS_HOST/api/2.0/repos/$repoid"
           echo $url
+          curl -X PATCH -H 'content-type: application/json' \
+          $url \
+          -d '{ "branch": "dev" }'
