@@ -138,6 +138,16 @@ poll_questions_df = spark.sql(
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ### Transformations
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Event
+
+# COMMAND ----------
+
 event_df = convert_date_object(event_df, "start_date", "dd/MM/y")
 display(event_df)
 
@@ -149,6 +159,37 @@ display(event_df)
 # COMMAND ----------
 
 event_df.createOrReplaceTempView("new_event_temp_view")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Session
+
+# COMMAND ----------
+
+session_df = convert_date_object(session_df, "session_date", "d/M/y")
+display(session_df)
+
+# COMMAND ----------
+
+session_df.createOrReplaceTempView("new_session_temp_view")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Attendee
+
+# COMMAND ----------
+
+attendee = inperson_attendee_df.union(virtual_attendee_df)
+
+# COMMAND ----------
+
+display(attendee.count())
+
+# COMMAND ----------
+
+attendee.createOrReplaceTempView("new_attendee_master_temp_view")
 
 # COMMAND ----------
 
@@ -223,15 +264,6 @@ event_df.createOrReplaceTempView("new_event_temp_view")
 # MAGIC where
 # MAGIC   create_date = current_date
 # MAGIC   or modified_date = current_date;
-
-# COMMAND ----------
-
-session_df = convert_date_object(session_df, "session_date", "d/M/y")
-display(session_df)
-
-# COMMAND ----------
-
-session_df.createOrReplaceTempView("new_session_temp_view")
 
 # COMMAND ----------
 
@@ -326,18 +358,6 @@ display(inperson_attendee_df.count())
 # COMMAND ----------
 
 display(virtual_attendee_df.count())
-
-# COMMAND ----------
-
-attendee = inperson_attendee_df.union(virtual_attendee_df)
-
-# COMMAND ----------
-
-display(attendee.count())
-
-# COMMAND ----------
-
-attendee.createOrReplaceTempView("new_attendee_master_temp_view")
 
 # COMMAND ----------
 

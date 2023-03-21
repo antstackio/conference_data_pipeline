@@ -72,5 +72,3 @@ virtual_attendee_df = read_data_from_raw('conference_raw', 'virtual_attendee')
 polling_questions_df = read_data_from_raw('conference_raw', 'polling_questions')
 
 # COMMAND ----------
-
-
