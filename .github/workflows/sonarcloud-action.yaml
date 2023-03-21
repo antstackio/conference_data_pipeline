@@ -23,10 +23,12 @@ jobs:
         run: echo "${{ github.event.pull_request.number }}" >> ~/arg-pr-key.txt
         run: echo "${{ secrets.SONAR_TOKEN }}" >> ~/arg-sonar-token.txt
       - name: upload pr key to dbfs
+        uses: databricks/upload-dbfs-temp@v0
         with:
           local-path: ~/arg-pr-key.txt
           databricks-host: https://dbc-89c9e463-7ff5.cloud.databricks.com
       - name: upload pr key to dbfs
+        uses: databricks/upload-dbfs-temp@v0
         with:
           local-path: ~/arg-sonar-token.txt
           databricks-host: https://dbc-89c9e463-7ff5.cloud.databricks.com
