@@ -27,11 +27,13 @@ jobs:
         with:
           local-path: ~/arg-pr-key.txt
           databricks-host: https://dbc-89c9e463-7ff5.cloud.databricks.com
+          databricks-token: ${{ secrets.DATABRICKS_TOKEN }}
       - name: upload pr key to dbfs
         uses: databricks/upload-dbfs-temp@v0
         with:
           local-path: ~/arg-sonar-token.txt
           databricks-host: https://dbc-89c9e463-7ff5.cloud.databricks.com
+          databricks-token: ${{ secrets.DATABRICKS_TOKEN }}
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
