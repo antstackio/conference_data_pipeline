@@ -21,7 +21,8 @@ jobs:
       - name: Create databricks argument files
         run: echo "PR number is ${{ github.event.pull_request.number }}" &&
              touch ~/arg-pr-key.txt && echo "${{ github.event.pull_request.number }}" >> ~/arg-pr-key.txt &&
-             touch ~/arg-sonar-token.txt && echo "${{ secrets.SONAR_TOKEN }}" >> ~/arg-sonar-token.txt
+             touch ~/arg-sonar-token.txt && echo "${{ secrets.SONAR_TOKEN }}" >> ~/arg-sonar-token.txt &&
+             ls && pwd
       - name: upload pr key to dbfs
         uses: databricks/upload-dbfs-temp@v0
         with:
@@ -52,17 +53,6 @@ jobs:
                 "permission_level": "CAN_VIEW"
               }
             ]
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.python.coverage.reportPaths=coverage-reports/coverage.xml
-            -Dsonar.organization=antstackio
-            -Dsonar.projectKey=antstackio_conference_data_pipeline
-            -Dsonar.host.url=https://sonarcloud.io
       - name: Cleanup the Coverage State Files
         uses: databricks/run-notebook@v0.0.3
         with:
