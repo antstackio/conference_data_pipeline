@@ -1,4 +1,33 @@
 # Databricks notebook source
+# MAGIC %sh
+# MAGIC 
+# MAGIC cd /tmp || exit
+# MAGIC echo "Downloading sonar-scanner....."
+# MAGIC if [ -d "/tmp/sonar-scanner-cli-4.7.0.2747-linux.zip" ];then
+# MAGIC     sudo rm /tmp/sonar-scanner-cli-4.7.0.2747-linux.zip
+# MAGIC fi
+# MAGIC wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.7.0.2747-linux.zip
+# MAGIC echo "Download completed."
+# MAGIC 
+# MAGIC echo "Unziping downloaded file..."
+# MAGIC unzip sonar-scanner-cli-4.7.0.2747-linux.zip
+# MAGIC echo "Unzip completed."
+# MAGIC rm sonar-scanner-cli-4.7.0.2747-linux.zip
+# MAGIC 
+# MAGIC echo "Installing to opt..."
+# MAGIC if [ -d "/var/opt/sonar-scanner-4.7.0.2747-linux" ];then
+# MAGIC     sudo rm -rf /var/opt/sonar-scanner-4.7.0.2747-linux
+# MAGIC fi
+# MAGIC sudo mv sonar-scanner-4.7.0.2747-linux /var/opt
+# MAGIC 
+# MAGIC echo "Installation completed successfully."
+# MAGIC 
+# MAGIC echo "You can use sonar-scanner!"
+# MAGIC 
+# MAGIC export PATH="/var/opt/sonar-scanner-4.7.0.2747-linux/bin:$PATH"
+
+# COMMAND ----------
+
 import pytest
 import os
 import sys
@@ -23,7 +52,3 @@ retcode = pytest.main([".", "-v", "-p", "no:cacheprovider", "--cov","--cov-repor
 
 # Fail the cell execution if there are any test failures.
 assert retcode == 0, "The pytest invocation failed. See the log for details."
-
-# COMMAND ----------
-
-
