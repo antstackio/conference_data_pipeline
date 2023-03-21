@@ -1,0 +1,16 @@
+name: Update
+on:
+  push:
+    branches:
+      - 'SCD-*'
+env:
+  DATABRICKS_HOST: https://dbc-89c9e463-7ff5.cloud.databricks.com/
+
+jobs:
+  pull-updates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Datebricks Stage Repo
+        run: |
+          url="$DATABRICKS_HOST/api/2.0/repos/$DATABRICKS_STAGE_REPO_ID"
+          echo $url
