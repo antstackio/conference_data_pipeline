@@ -19,4 +19,4 @@ jobs:
           response=$(curl -X PATCH -H 'content-type: application/json' \
           $url \
           -d '{ "branch": "dev" }')
-          echo $response
+          echo "$response"
