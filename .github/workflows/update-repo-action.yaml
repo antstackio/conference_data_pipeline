@@ -4,7 +4,7 @@ on:
     branches:
       - 'SCD-*'
 env:
-  DATABRICKS_HOST: https://dbc-89c9e463-7ff5.cloud.databricks.com/
+  DATABRICKS_HOST: https://dbc-89c9e463-7ff5.cloud.databricks.com
 
 jobs:
   pull-updates:
