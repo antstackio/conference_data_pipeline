@@ -20,8 +20,8 @@ jobs:
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
       - name: Create databricks argument files
         run: echo "PR number is ${{ github.event.pull_request.number }}" &&
-             echo "${{ github.event.pull_request.number }}" >> ~/arg-pr-key.txt &&
-             echo "${{ secrets.SONAR_TOKEN }}" >> ~/arg-sonar-token.txt
+             touch ~/arg-pr-key.txt && echo "${{ github.event.pull_request.number }}" >> ~/arg-pr-key.txt &&
+             touch ~/arg-sonar-token.txt && echo "${{ secrets.SONAR_TOKEN }}" >> ~/arg-sonar-token.txt
       - name: upload pr key to dbfs
         uses: databricks/upload-dbfs-temp@v0
         with:
