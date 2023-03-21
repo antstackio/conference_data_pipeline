@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Update Datebricks Stage Repo
-        with: 
+        env: 
           repo-id: ${{ secrets.DATABRICKS_STAGE_REPO_ID }}
         run: |
           url="$DATABRICKS_HOST/api/2.0/repos/$repo-id"
