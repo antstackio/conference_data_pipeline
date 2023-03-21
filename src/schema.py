@@ -75,8 +75,8 @@ virtual_attendee_schema = StructType(
         StructField("job_role", StringType(), True),
         StructField("state", StringType(), True),
         StructField("session_title", StringType(), True),
-        StructField("login_time", FloatType(), True),
-        StructField("logout_time", FloatType(), True),
+        StructField("login_time", StringType(), True),
+        StructField("logout_time", StringType(), True),
     ]
 )
 poll_question_schema = StructType(
