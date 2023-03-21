@@ -17,6 +17,7 @@ jobs:
           url="$DATABRICKS_HOST/api/2.0/repos/$repoid"
           echo $url
           response=$(curl -X PATCH -H 'content-type: application/json' \
+          -w "%{http_code}"
           $url \
           -d '{ "branch": "dev" }')
           echo "$response"
