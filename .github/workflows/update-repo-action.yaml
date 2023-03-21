@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Update Datebricks Stage Repo
         env: 
-          repoid: ${{ secrets.DATABRICKS_STAGE_REPO_ID }}
+          repoid: '3115775383298010'
         run: |
           url="$DATABRICKS_HOST/api/2.0/repos/$repoid"
           echo $url
