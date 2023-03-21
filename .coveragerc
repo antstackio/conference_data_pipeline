@@ -1,0 +1,4 @@
+[run]
+omit = 
+  /local_disk0/*
+  /databricks/*

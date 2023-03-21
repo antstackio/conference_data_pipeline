@@ -52,3 +52,17 @@ retcode = pytest.main([".", "-v", "-p", "no:cacheprovider", "--cov","--cov-repor
 
 # Fail the cell execution if there are any test failures.
 assert retcode == 0, "The pytest invocation failed. See the log for details."
+
+# COMMAND ----------
+
+# MAGIC %sh
+# MAGIC 
+# MAGIC sh /var/opt/sonar-scanner-4.7.0.2747-linux/bin/sonar-scanner -X  \
+# MAGIC   -Dsonar.projectKey=antstackio_conference_data_pipeline \
+# MAGIC   -Dsonar.organization=antstackio \
+# MAGIC   -Dsonar.host.url=https://sonarcloud.io \
+# MAGIC   -Dsonar.python.coverage.reportPaths=coverage-reports/coverage.xml \
+# MAGIC   -Dsonar.sources=. \
+# MAGIC   -Dsonar.tests=tests/ \
+# MAGIC   -Dsonar.pullrequest.key=`cat dbfs:/tmp/databricks-github-actions/arg-pr-key.txt` \
+# MAGIC   -Dsonar.login=`cat dbfs:/tmp/databricks-github-actions/arg-sonar-token.txt` 
