@@ -390,4 +390,29 @@ questions_target_df.write.format('delta').mode('append').option("mergeSchema", "
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC UPDATE conference_raw.event SET modified_date = current_date(), modified_user = current_user(), is_processed = TRUE WHERE is_processed = FALSE;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC UPDATE conference_raw.session SET modified_date = current_date(), modified_user = current_user(), is_processed = TRUE WHERE is_processed = FALSE;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC UPDATE conference_raw.in_person_attendee SET modified_date = current_date(), modified_user = current_user(), is_processed = TRUE WHERE is_processed = FALSE;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC UPDATE conference_raw.virtual_attendee SET modified_date = current_date(), modified_user = current_user(), is_processed = TRUE WHERE is_processed = FALSE;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC UPDATE conference_raw.polling_questions SET modified_date = current_date(), modified_user = current_user(), is_processed = TRUE WHERE is_processed = FALSE;
+
+# COMMAND ----------
+
 

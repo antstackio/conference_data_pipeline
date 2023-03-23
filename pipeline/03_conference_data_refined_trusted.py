@@ -1,5 +1,6 @@
 # Databricks notebook source
-from src.main import convert_date_object
+from src.main import convert_date_object, read_data_from_raw
+from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
     lit,
     current_timestamp,
@@ -12,6 +13,39 @@ from pyspark.sql.functions import (
     col,
     cast,
 )
+
+# COMMAND ----------
+
+spark = SparkSession.builder.getOrCreate()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Create Tables
+
+# COMMAND ----------
+
+with open("../SqlDBM/src/Tables/conference_trusted.event_dim.sql") as file:
+    ddl = file.read()
+    spark.sql(ddl)
+
+# COMMAND ----------
+
+with open("../SqlDBM/src/Tables/conference_trusted.session_dim.sql") as file:
+    ddl = file.read()
+    spark.sql(ddl)
+
+# COMMAND ----------
+
+with open("../SqlDBM/src/Tables/conference_trusted.event_registrant_dim.sql") as file:
+    ddl = file.read()
+    spark.sql(ddl)
+
+# COMMAND ----------
+
+with open("../SqlDBM/src/Tables/conference_trusted.attendee_session_dim.sql") as file:
+    ddl = file.read()
+    spark.sql(ddl)
 
 # COMMAND ----------
 
@@ -28,6 +62,7 @@ from pyspark.sql.functions import (
 event_df = spark.sql(
     """
   select
+    event_id,
     lower(event_name) as event_name,
     lower(addr_line_1) as addr_line_1,
     lower(addr_line_2) as addr_line_2,
@@ -39,10 +74,14 @@ event_df = spark.sql(
     country,
     create_user
   from
-    conference_raw.event
+    conference_refined.event
   where
     is_processed is false """
 )
+
+# COMMAND ----------
+
+event_df.printSchema()
 
 # COMMAND ----------
 
@@ -54,6 +93,7 @@ event_df = spark.sql(
 session_df = spark.sql(
     """
 select
+  session_id,
   lower(event_name) as event_name,
   lower(session_title) as session_title,
   lower(speakers) as speakers,
@@ -64,54 +104,43 @@ select
   exact_end_time,
   session_date
 from
-  conference_raw.session
+  conference_refined.session
 where
   is_processed is false"""
 )
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC #### Inperson Attendee Table
+session_df.printSchema()
 
 # COMMAND ----------
 
-inperson_attendee_df = spark.sql(
+# MAGIC %md
+# MAGIC #### Registrants
+
+# COMMAND ----------
+
+registrants_df = spark.sql(
     """
   select
+    attendee_id,
     registration_no,
     lower(first_name) as first_name,
     lower(last_name) as last_name,
     lower(job_role) as job_role,
     lower(s.State) as state,
     email_address,
-    create_user,
+    login_time,
+    logout_time,
     lower(session_title) as session_title,
-    'inperson' as attendee_type 
-  from conference_raw.in_person_attendee i left join default.states s on s.Abbreviation = i.state where i.is_processed is false"""
+    attendee_type,
+    create_user
+  from conference_refined.registrant r left join default.states s on s.Abbreviation = r.state where r.is_processed is false"""
 )
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC #### Virtual Attendee Table
-
-# COMMAND ----------
-
-virtual_attendee_df = spark.sql(
-    """
-  select 
-    registration_no,
-    lower(first_name) as first_name,
-    lower(last_name) as last_name,
-    lower(job_role) as job_role,
-    lower(s.State) as state,
-    email_address,
-    create_user,
-    lower(session_title) as session_title,
-    'virtual' as attendee_type 
-  from conference_raw.virtual_attendee v left join default.states s on s.Abbreviation = v.state where v.is_processed is false"""
-)
+registrants_df.printSchema()
 
 # COMMAND ----------
 
@@ -131,7 +160,7 @@ poll_questions_df = spark.sql(
         create_date,
         create_user,
         session_title
-    FROM conference_raw.polling_questions
+    FROM conference_refined.polling_questions
     WHERE is_processed is False
     """
 )
@@ -143,18 +172,7 @@ poll_questions_df = spark.sql(
 
 # COMMAND ----------
 
-# MAGIC %md
-# MAGIC #### Event
-
-# COMMAND ----------
-
-event_df = convert_date_object(event_df, "start_date", "dd/MM/y")
-display(event_df)
-
-# COMMAND ----------
-
-event_df = convert_date_object(event_df, "end_date", "dd/MM/y")
-display(event_df)
+display(event_df.head(5))
 
 # COMMAND ----------
 
@@ -167,8 +185,7 @@ event_df.createOrReplaceTempView("new_event_temp_view")
 
 # COMMAND ----------
 
-session_df = convert_date_object(session_df, "session_date", "d/M/y")
-display(session_df)
+display(session_df.head(5))
 
 # COMMAND ----------
 
@@ -181,21 +198,28 @@ session_df.createOrReplaceTempView("new_session_temp_view")
 
 # COMMAND ----------
 
-attendee = inperson_attendee_df.union(virtual_attendee_df)
+display(registrants_df.count())
 
 # COMMAND ----------
 
-display(attendee.count())
+registrants_df.createOrReplaceTempView("new_attendee_master_temp_view")
 
 # COMMAND ----------
 
-attendee.createOrReplaceTempView("new_attendee_master_temp_view")
+# MAGIC %md
+# MAGIC ### Load
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Event
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC MERGE INTO conference_refined.event_dim AS des USING (
+# MAGIC MERGE INTO conference_trusted.event_dim AS des USING (
 # MAGIC   SELECT
+# MAGIC     event_id,
 # MAGIC     event_name,
 # MAGIC     addr_line_1,
 # MAGIC     addr_line_2,
@@ -218,19 +242,20 @@ attendee.createOrReplaceTempView("new_attendee_master_temp_view")
 # MAGIC   des.addr_line_2 = src.addr_line_2,
 # MAGIC   des.city = src.city,
 # MAGIC   des.state = src.state,
-# MAGIC   des.zip_code = src.zipcode,
+# MAGIC   des.zipcode = src.zipcode,
 # MAGIC   des.create_user = src.create_user,
 # MAGIC   des.country = src.country,
 # MAGIC   des.modified_date = current_timestamp()
 # MAGIC   WHEN NOT MATCHED THEN
 # MAGIC INSERT
 # MAGIC   (
+# MAGIC     event_id,
 # MAGIC     event_name,
 # MAGIC     addr_line_1,
 # MAGIC     addr_line_2,
 # MAGIC     city,
 # MAGIC     state,
-# MAGIC     zip_code,
+# MAGIC     zipcode,
 # MAGIC     start_date,
 # MAGIC     end_date,
 # MAGIC     create_user,
@@ -239,6 +264,7 @@ attendee.createOrReplaceTempView("new_attendee_master_temp_view")
 # MAGIC   )
 # MAGIC VALUES
 # MAGIC   (
+# MAGIC     src.event_id,
 # MAGIC     src.event_name,
 # MAGIC     src.addr_line_1,
 # MAGIC     src.addr_line_1,
@@ -260,7 +286,7 @@ attendee.createOrReplaceTempView("new_attendee_master_temp_view")
 # MAGIC select
 # MAGIC   *
 # MAGIC from
-# MAGIC   conference_refined.event_dim
+# MAGIC   conference_trusted.event_dim
 # MAGIC where
 # MAGIC   create_date = current_date
 # MAGIC   or modified_date = current_date;
@@ -279,11 +305,17 @@ attendee.createOrReplaceTempView("new_attendee_master_temp_view")
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC #### Session
+
+# COMMAND ----------
+
 # MAGIC %sql
-# MAGIC MERGE INTO conference_refined.session_dim AS des USING (
+# MAGIC MERGE INTO conference_trusted.session_dim AS des USING (
 # MAGIC   SELECT
 # MAGIC     event_id,
 # MAGIC     event_name,
+# MAGIC     session_id,
 # MAGIC     session_title,
 # MAGIC     speakers,
 # MAGIC     session_date,
@@ -311,6 +343,7 @@ attendee.createOrReplaceTempView("new_attendee_master_temp_view")
 # MAGIC   (
 # MAGIC     event_id,
 # MAGIC     event_name,
+# MAGIC     session_id,
 # MAGIC     session_title,
 # MAGIC     session_date,
 # MAGIC     speakers,
@@ -326,6 +359,7 @@ attendee.createOrReplaceTempView("new_attendee_master_temp_view")
 # MAGIC   (
 # MAGIC     src.event_id,
 # MAGIC     src.event_name,
+# MAGIC     src.session_id,
 # MAGIC     src.session_title,
 # MAGIC     src.session_date,
 # MAGIC     src.speakers,
@@ -346,18 +380,15 @@ attendee.createOrReplaceTempView("new_attendee_master_temp_view")
 # MAGIC select
 # MAGIC   *
 # MAGIC from
-# MAGIC   conference_refined.session_dim
+# MAGIC   conference_trusted.session_dim
 # MAGIC where
 # MAGIC   create_date = current_date
 # MAGIC   or modified_date = current_date;
 
 # COMMAND ----------
 
-display(inperson_attendee_df.count())
-
-# COMMAND ----------
-
-display(virtual_attendee_df.count())
+# MAGIC %md
+# MAGIC #### Attendee
 
 # COMMAND ----------
 
@@ -365,13 +396,18 @@ display(virtual_attendee_df.count())
 # MAGIC create
 # MAGIC or replace temp view attendee_temp_view as
 # MAGIC select
-# MAGIC   distinct first_name,
+# MAGIC   distinct
+# MAGIC   registration_no,
+# MAGIC   first_name,
 # MAGIC   last_name,
 # MAGIC   email_address,
 # MAGIC   job_role,
-# MAGIC   state
+# MAGIC   t.state,
+# MAGIC   e.event_id as event_id,
+# MAGIC   e.event_name
 # MAGIC from
-# MAGIC   new_attendee_master_temp_view
+# MAGIC   new_attendee_master_temp_view t
+# MAGIC   left join event_dim_temp_view e
 
 # COMMAND ----------
 
@@ -384,8 +420,11 @@ display(virtual_attendee_df.count())
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC MERGE INTO conference_refined.attendee_dim as des USING (
+# MAGIC MERGE INTO conference_trusted.event_registrant_dim as des USING (
 # MAGIC   SELECT
+# MAGIC     registration_no,
+# MAGIC     event_id,
+# MAGIC     event_name,
 # MAGIC     first_name,
 # MAGIC     last_name,
 # MAGIC     state,
@@ -404,6 +443,9 @@ display(virtual_attendee_df.count())
 # MAGIC   des.modified_date = current_timestamp()
 # MAGIC   WHEN NOT MATCHED THEN
 # MAGIC INSERT(
+# MAGIC     event_id,
+# MAGIC     event_name,
+# MAGIC     registration_no,
 # MAGIC     first_name,
 # MAGIC     last_name,
 # MAGIC     job_role,
@@ -414,6 +456,9 @@ display(virtual_attendee_df.count())
 # MAGIC   )
 # MAGIC VALUES
 # MAGIC   (
+# MAGIC     src.event_id,
+# MAGIC     src.event_name,
+# MAGIC     src.registration_no,
 # MAGIC     src.first_name,
 # MAGIC     src.last_name,
 # MAGIC     src.job_role,
@@ -429,7 +474,7 @@ display(virtual_attendee_df.count())
 # MAGIC SELECT
 # MAGIC   count(*)
 # MAGIC FROM
-# MAGIC   conference_refined.attendee_dim
+# MAGIC   conference_trusted.event_registrant_dim
 # MAGIC where
 # MAGIC   create_date = current_date
 # MAGIC   or modified_date = current_date
@@ -442,18 +487,16 @@ display(virtual_attendee_df.count())
 # MAGIC SELECT
 # MAGIC   d.*,
 # MAGIC   t.attendee_type,
-# MAGIC   t.session_title
+# MAGIC   t.session_title,
+# MAGIC   t.login_time,
+# MAGIC   t.logout_time
 # MAGIC FROM
-# MAGIC   conference_refined.attendee_dim d
-# MAGIC   LEFT JOIN new_attendee_master_temp_view t ON t.first_name = d.first_name
-# MAGIC   AND t.last_name = d.last_name
-# MAGIC   AND t.job_role = d.job_role
-# MAGIC   AND t.state = d.state
+# MAGIC   conference_trusted.event_registrant_dim d
+# MAGIC   LEFT JOIN new_attendee_master_temp_view t on t.registration_no = d.registration_no
 # MAGIC where
-# MAGIC   d.create_date = current_date
+# MAGIC   t.session_title is not null
+# MAGIC   and d.create_date = current_date
 # MAGIC   or d.modified_date = current_date
-# MAGIC order by
-# MAGIC   d.attendee_id
 
 # COMMAND ----------
 
@@ -467,15 +510,24 @@ display(virtual_attendee_df.count())
 
 # MAGIC %sql
 # MAGIC insert into
-# MAGIC   conference_refined.attendee_session_dim
+# MAGIC   conference_trusted.attendee_session_dim
 # MAGIC select
 # MAGIC   s.session_id,
+# MAGIC   s.session_title,
 # MAGIC   a.attendee_id,
 # MAGIC   a.attendee_type,
-# MAGIC   current_date() as create_date
+# MAGIC   login_time,
+# MAGIC   logout_time,
+# MAGIC   current_date() as create_date,
+# MAGIC   current_user()
 # MAGIC from
 # MAGIC   attendee_dim_temp_view a
 # MAGIC   left join session_dim_temp_view s on s.session_title = a.session_title
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Questions
 
 # COMMAND ----------
 
