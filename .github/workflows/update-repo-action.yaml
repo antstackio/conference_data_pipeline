@@ -1,0 +1,25 @@
+name: Deployment
+on:
+  workflow_run:
+    workflows: [Build]
+    types:
+      - completed
+env:
+  DATABRICKS_HOST: https://dbc-89c9e463-7ff5.cloud.databricks.com
+
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    environment: stage
+    steps:
+      - name: Deploy to Datebricks Stage Repo
+        env: 
+          repoid: '3115775383298010'
+        run: |
+          url="$DATABRICKS_HOST/api/2.0/repos/$repoid"
+          echo $url
+          response=$(curl -X PATCH -H 'content-type: application/json' \
+          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+          $url \
+          -d '{ "branch": "dev" }')
+          echo "$response"
