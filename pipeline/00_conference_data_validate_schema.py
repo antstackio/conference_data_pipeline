@@ -137,7 +137,3 @@ if questions_file_exists:
 
 # COMMAND ----------
 
-
-
-
-# MAGIC %md
