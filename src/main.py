@@ -11,6 +11,7 @@ from pyspark.sql.functions import (
     when,
     DataFrame,
     current_date,
+    concat
 )
 
 
@@ -125,3 +126,41 @@ def read_from_raw_layer(table_name: str) -> DataFrame:
     df = spark.read.table(f'conference_raw.{table_name}').filter(col('is_processed') == 'false')
     display(df)
     return df
+
+def read_data_from_raw(spark:SparkSession, schema: str, table_name: str) -> DataFrame:
+    df = spark.read.table(f"{schema}.{table_name}")
+    df = df.filter(df.is_processed == "false")
+    df.printSchema()
+    return df
+
+def add_attendee_type(df: DataFrame, attendee_type: str) -> DataFrame:
+    result_df = df.withColumn("attendee_type", lit(attendee_type))
+    return result_df
+
+
+def create_timestamp_str(df: DataFrame, date_column_name: str, column_name: str, new_column_name: str) -> DataFrame:
+    result_df = df.withColumn(
+        new_column_name,
+        concat(
+            df[date_column_name].cast(StringType()),
+            lit(' '),
+            df[column_name]
+        )
+    )
+
+    result_df.printSchema()
+
+    return result_df
+
+def select_columns_from_dataframe(df: DataFrame, columns: list) -> DataFrame:
+    result_df = df.select(*columns)
+    
+    result_df.printSchema()
+
+    return result_df
+
+def union_dataframes(df1: DataFrame, df2: DataFrame) -> DataFrame:
+    result_df = df1.union(df2)
+
+    result_df.printSchema()
+    return result_df
