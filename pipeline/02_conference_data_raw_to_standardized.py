@@ -6,9 +6,10 @@ from src.main import (
     create_timestamp_str,
     select_columns_from_dataframe,
     union_dataframes,
+    add_required_columns
 )
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StringType
+from pyspark.sql.types import StringType, TimestampType
 from pyspark.sql.functions import (
     lit,
     current_timestamp,
@@ -23,6 +24,7 @@ from pyspark.sql.functions import (
     concat,
     to_timestamp,
 )
+from pyspark.dbutils import DBUtils
 
 # COMMAND ----------
 
@@ -120,13 +122,13 @@ inperson_attendee_df = add_attendee_type(inperson_attendee_df, "inperson")
 # COMMAND ----------
 
 inperson_attendee_df = inperson_attendee_df.withColumn(
-    "login_time", lit(None).cast(StringType())
+    "login_time", lit(None).cast((TimestampType()))
 )
 
 # COMMAND ----------
 
 inperson_attendee_df = inperson_attendee_df.withColumn(
-    "logout_time", lit(None).cast(StringType())
+    "logout_time", lit(None).cast(TimestampType())
 )
 
 # COMMAND ----------
@@ -138,6 +140,18 @@ virtual_registants_df = virtual_attendee_df.filter(
 # COMMAND ----------
 
 virtual_registants_df.printSchema()
+
+# COMMAND ----------
+
+virtual_registants_df = virtual_registants_df.withColumn(
+    "login_time", virtual_registants_df.login_time.cast(TimestampType())
+)
+
+# COMMAND ----------
+
+virtual_registants_df = virtual_registants_df.withColumn(
+    "logout_time", virtual_registants_df.logout_time.cast(TimestampType())
+)
 
 # COMMAND ----------
 
@@ -248,6 +262,10 @@ virtual_attendee_df = union_dataframes(virtual_attendee_df, virtual_registants_d
 
 # COMMAND ----------
 
+
+
+# COMMAND ----------
+
 print("Inperson attendee count", inperson_attendee_df.count(), sep=" :: ")
 print("Virtual attendee count", virtual_attendee_df.count(), sep=" :: ")
 
@@ -261,8 +279,66 @@ print("Total attendee count", attendee.count(), sep=" :: ")
 
 # COMMAND ----------
 
+
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ### Load
+
+# COMMAND ----------
+
+dbutils = DBUtils(spark)
+
+# COMMAND ----------
+
+current_user =  (
+    dbutils.notebook.entry_point.getDbutils()
+    .notebook()
+    .getContext()
+    .userName()
+    .get()
+)
+
+# COMMAND ----------
+
+event_target_df = (
+    event_df.withColumn("create_user", lit(current_user))
+    .withColumn("create_date", lit(current_date()))
+    .withColumn("modified_date", lit(None).cast(StringType()))
+    .withColumn("modified_user", lit(None).cast(StringType()))
+    .withColumn("is_processed", lit(False))
+)
+
+# COMMAND ----------
+
+session_target_df = (
+    session_df.withColumn("create_user", lit(current_user))
+    .withColumn("create_date", lit(current_date()))
+    .withColumn("modified_date", lit(None).cast(StringType()))
+    .withColumn("modified_user", lit(None).cast(StringType()))
+    .withColumn("is_processed", lit(False))
+)
+
+# COMMAND ----------
+
+attendee_target_df = (
+    attendee.withColumn("create_user", lit(current_user))
+    .withColumn("create_date", lit(current_date()))
+    .withColumn("modified_date", lit(None).cast(StringType()))
+    .withColumn("modified_user", lit(None).cast(StringType()))
+    .withColumn("is_processed", lit(False))
+)
+
+# COMMAND ----------
+
+questions_target_df = (
+    polling_questions_df.withColumn("create_user", lit(current_user))
+    .withColumn("create_date", lit(current_date()))
+    .withColumn("modified_date", lit(None).cast(StringType()))
+    .withColumn("modified_user", lit(None).cast(StringType()))
+    .withColumn("is_processed", lit(False))
+)
 
 # COMMAND ----------
 
@@ -295,6 +371,22 @@ with open("../SqlDBM/src/Tables/conference_refined.registrant.sql") as file:
 with open("../SqlDBM/src/Tables/conference_refined.polling_questions.sql") as file:
     ddl = file.read()
     spark.sql(ddl)
+
+# COMMAND ----------
+
+event_target_df.write.format('delta').mode('append').option("mergeSchema", "true").saveAsTable('conference_refined.event')
+
+# COMMAND ----------
+
+session_target_df.write.format('delta').mode('append').option("mergeSchema", "true").saveAsTable("conference_refined.session")
+
+# COMMAND ----------
+
+attendee_target_df.write.format('delta').mode('append').option("mergeSchema", "true").saveAsTable("conference_refined.registrant")
+
+# COMMAND ----------
+
+questions_target_df.write.format('delta').mode('append').option("mergeSchema", "true").saveAsTable("conference_refined.polling_questions")
 
 # COMMAND ----------
 

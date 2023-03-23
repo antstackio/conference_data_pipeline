@@ -5,7 +5,7 @@
 
 -- ************************************** conference_refined.polling_questions
 
-CREATE TABLE conference_refined.polling_questions
+CREATE TABLE IF NOT EXISTS conference_refined.polling_questions
 (
  session_title            string NOT NULL,
  attendee_registration_no string NOT NULL,
@@ -15,6 +15,6 @@ CREATE TABLE conference_refined.polling_questions
  create_user              string NOT NULL,
  create_date              date NOT NULL,
  modified_user            string,
- modified_date            date,
+ modified_date            STRING,
  is_processed             boolean NOT NULL
 );
