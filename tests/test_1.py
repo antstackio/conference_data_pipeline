@@ -8,5 +8,7 @@ spark = SparkSession.builder \
 
 
 def test_read_file_from_src_path():
-    a,b = 1,1
+    
+    a = 1
+    b = 1
     assert a == b
