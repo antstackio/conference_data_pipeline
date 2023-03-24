@@ -9,7 +9,7 @@ env:
 jobs:
   deployment:
     runs-on: ubuntu-latest
-    environment: master
+    environment: production
     steps:
       - name: Deploy to Datebricks Production Repo
         env: 

@@ -840,4 +840,5 @@ poll_questions_df.createOrReplaceTempView("polling_questions_master_temp_view")
 
 # COMMAND ----------
 
-
+# MAGIC %sql
+# MAGIC select * from conference_trusted.satisfaction_rating;
