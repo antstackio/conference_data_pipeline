@@ -4,7 +4,7 @@ from src.snowflake_credentials import *
 
 # COMMAND ----------
 
-df = spark.sql("show tables in conference_refined")
+df = spark.sql("show tables in conference_trusted")
 tables = df.select(f.collect_list('tableName')).first()[0]
 
 # COMMAND ----------
@@ -14,8 +14,8 @@ print(*tables,sep = "\n")
 
 # COMMAND ----------
 
-options = snowflake_options('refined')
-dbcDatabase = "conference_refined"
+options = snowflake_options('trusted')
+dbcDatabase = "conference_trusted"
 
 # COMMAND ----------
 
