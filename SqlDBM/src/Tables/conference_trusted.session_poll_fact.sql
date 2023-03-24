@@ -8,8 +8,9 @@
 CREATE TABLE IF NOT EXISTS conference_trusted.session_poll_fact
 (
  question_id             bigint NOT NULL COMMENT 'SK of the question dimension',
+ question_text           STRING NOT NULL,
  session_id              bigint NOT NULL COMMENT 'SK of the session dimension',
- session_name            string NOT NULL COMMENT 'Title of the session',
+ session_title           string NOT NULL COMMENT 'Title of the session',
  question_response_count int NOT NULL COMMENT 'Total no. of the people who answered the question',
  create_date             date NOT NULL COMMENT 'Creation date of the row',
  create_user             string NOT NULL COMMENT 'User who executed the sql query'

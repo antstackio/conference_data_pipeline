@@ -13,5 +13,7 @@ CREATE TABLE IF NOT EXISTS conference_trusted.satisfaction_rating
  question_text string NOT NULL COMMENT 'Text of the question',
  rating        int NOT NULL COMMENT 'Ratings, possible value(1,2,3,4,5)',
  rating_count  int NOT NULL COMMENT 'No, of attendee picked the rate',
- target_rating int NOT NULL COMMENT 'Target rating is 5'
+ target_rating int NOT NULL COMMENT 'Target rating is 5',
+ create_date   DATE NOT NULL,
+ create_user   STRING NOT NULL
 ) COMMENT 'Table to store satisfaction rating';

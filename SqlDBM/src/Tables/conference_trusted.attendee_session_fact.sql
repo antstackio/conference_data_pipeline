@@ -7,10 +7,10 @@
 
 CREATE TABLE IF NOT EXISTS conference_trusted.attendee_session_fact
 (
- session_id             bigint NOT NULL CONSTRAINT PK_1 PRIMARY KEY,
+ session_id             bigint NOT NULL,
+ session_title          string NOT NULL,
  event_total_attendee   int NOT NULL,
  session_total_attendee int NOT NULL,
- session_title          string NOT NULL,
  create_date            date NOT NULL,
  create_user            string NOT NULL
 );

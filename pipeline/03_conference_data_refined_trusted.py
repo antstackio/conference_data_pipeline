@@ -49,6 +49,40 @@ with open("../SqlDBM/src/Tables/conference_trusted.attendee_session_dim.sql") as
 
 # COMMAND ----------
 
+with open("../SqlDBM/src/Tables/conference_trusted.question_dim.sql") as file:
+    ddl = file.read()
+    spark.sql(ddl)
+
+# COMMAND ----------
+
+with open("../SqlDBM/src/Tables/conference_trusted.question_attendee_dim.sql") as file:
+    ddl = file.read()
+    spark.sql(ddl)
+
+# COMMAND ----------
+
+with open("../SqlDBM/src/Tables/conference_trusted.session_poll_fact.sql") as file:
+    ddl = file.read()
+    spark.sql(ddl)
+
+# COMMAND ----------
+
+ with open("../SqlDBM/src/Tables/conference_trusted.satisfaction_rating.sql") as file:
+    ddl = file.read()
+    spark.sql(ddl)
+
+# COMMAND ----------
+
+with open("../SqlDBM/src/Tables/conference_trusted.attendee_session_fact.sql") as file:
+    ddl = file.read()
+    spark.sql(ddl)
+
+# COMMAND ----------
+
+
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ### Pull Raw layer data
 
@@ -387,6 +421,11 @@ registrants_df.createOrReplaceTempView("new_attendee_master_temp_view")
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC select * from session_dim_temp_view;
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC #### Attendee
 
@@ -554,7 +593,7 @@ poll_questions_df.createOrReplaceTempView("polling_questions_master_temp_view")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC MERGE INTO conference_refined.questions_dim as des USING (
+# MAGIC MERGE INTO conference_trusted.question_dim as des USING (
 # MAGIC   SELECT
 # MAGIC     *
 # MAGIC   from
@@ -578,133 +617,226 @@ poll_questions_df.createOrReplaceTempView("polling_questions_master_temp_view")
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC INSERT INTO
-# MAGIC   conference_refined.question_attendee_dim
 # MAGIC SELECT
 # MAGIC   q.question_id,
-# MAGIC   a.attendee_id,
+# MAGIC   er.attendee_id,
+# MAGIC   s.session_id,
+# MAGIC   s.session_title,
+# MAGIC   t.option_text
+# MAGIC FROM
+# MAGIC   polling_questions_master_temp_view t
+# MAGIC   LEFT JOIN conference_trusted.question_dim q on q.question_text = t.poll_question
+# MAGIC   LEFT JOIN conference_trusted.event_registrant_dim er on er.registration_no = t.attendee_registration_no
+# MAGIC   LEFT JOIN session_dim_temp_view s on s.session_title = t.session_title
+# MAGIC WHERE
+# MAGIC   q.create_date = current_date
+# MAGIC   or q.modified_date = current_date
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC INSERT INTO
+# MAGIC   conference_trusted.question_attendee_dim
+# MAGIC SELECT
+# MAGIC   s.session_id,
+# MAGIC   s.session_title,
+# MAGIC   er.attendee_id,
+# MAGIC   q.question_id,
+# MAGIC   q.question_text,
 # MAGIC   t.option_text,
 # MAGIC   current_date() as create_date,
 # MAGIC   current_user() as create_user
 # MAGIC FROM
 # MAGIC   polling_questions_master_temp_view t
-# MAGIC   LEFT JOIN conference_refined.questions_dim q on q.question_text = t.poll_question
-# MAGIC   AND q.create_date = current_date
+# MAGIC   LEFT JOIN conference_trusted.question_dim q on q.question_text = t.poll_question
+# MAGIC   LEFT JOIN conference_trusted.event_registrant_dim er on er.registration_no = t.attendee_registration_no
+# MAGIC   LEFT JOIN session_dim_temp_view s on s.session_title = t.session_title
+# MAGIC WHERE
+# MAGIC   q.create_date = current_date
 # MAGIC   or q.modified_date = current_date
-# MAGIC   LEFT JOIN new_attendee_master_temp_view at on at.registration_no = t.attendee_registration_no
-# MAGIC   LEFT JOIN conference_refined.attendee_dim a on a.first_name = at.first_name
-# MAGIC   and a.last_name = at.last_name
-# MAGIC   and a.job_role = at.job_role
-# MAGIC   AND a.state = at.state
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT
-# MAGIC   *
-# MAGIC FROM
-# MAGIC   conference_refined.questions_dim;
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC CREATE
-# MAGIC or REPLACE TEMP VIEW question_agg as
 # MAGIC SELECT
 # MAGIC   first(t.poll_question) as poll_question,
 # MAGIC   q.question_id,
-# MAGIC   count(q.question_id) as question_response_count
+# MAGIC   count(q.question_id) as question_response_count,
+# MAGIC   first(s.session_id) as session_id,
+# MAGIC   first(s.session_title) as session_title
 # MAGIC from
 # MAGIC   polling_questions_master_temp_view t
-# MAGIC   LEFT JOIN conference_refined.questions_dim q on q.question_text = t.poll_question
+# MAGIC   LEFT JOIN conference_trusted.question_dim q on q.question_text = t.poll_question
+# MAGIC   LEFT JOIN session_dim_temp_view s on s.session_title = t.session_title
 # MAGIC GROUP BY
-# MAGIC   q.question_id
+# MAGIC   q.question_id,
+# MAGIC   s.session_id
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC CREATE
-# MAGIC or REPLACE TEMP VIEW option_agg as
+# MAGIC INSERT INTO conference_trusted.session_poll_fact 
 # MAGIC SELECT
-# MAGIC   first(poll_option) as poll_option,
-# MAGIC   first(option_text) as option_text,
-# MAGIC   count(option_text) as option_count
-# MAGIC FROM
-# MAGIC   polling_questions_master_temp_view
+# MAGIC   q.question_id,
+# MAGIC   first(t.poll_question) as question_text,
+# MAGIC   first(s.session_id) as session_id,
+# MAGIC   first(s.session_title) as session_title,
+# MAGIC   count(q.question_id) as question_response_cout,
+# MAGIC   current_date() as create_date,
+# MAGIC   current_user() as create_user
+# MAGIC from
+# MAGIC   polling_questions_master_temp_view t
+# MAGIC   LEFT JOIN conference_trusted.question_dim q on q.question_text = t.poll_question
+# MAGIC   LEFT JOIN session_dim_temp_view s on s.session_title = t.session_title
 # MAGIC GROUP BY
-# MAGIC   option_text,
-# MAGIC   poll_option
+# MAGIC   q.question_id,
+# MAGIC   s.session_id
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC CREATE
-# MAGIC or replace temp view question_options_temp_view as
+# MAGIC create
+# MAGIC or replace temp view satisfaction_temp_view as
 # MAGIC SELECT
-# MAGIC   DISTINCT poll_question,
+# MAGIC   s.session_id,
+# MAGIC   q.question_id,
+# MAGIC   poll_question,
 # MAGIC   poll_option,
 # MAGIC   option_text,
-# MAGIC   session_title
+# MAGIC   attendee_registration_no,
+# MAGIC   s.session_title
 # MAGIC from
-# MAGIC   polling_questions_master_temp_view
-# MAGIC WHERE
-# MAGIC   option_text != 'null'
-# MAGIC ORDER BY
-# MAGIC   poll_question,
-# MAGIC   poll_option
+# MAGIC   polling_questions_master_temp_view t
+# MAGIC   left join conference_trusted.question_dim q on q.question_text = t.poll_question
+# MAGIC   and t.poll_question = 'How would you like to rate the session out of five?'
+# MAGIC   left join session_dim_temp_view s on s.session_title = t.session_title
+# MAGIC where
+# MAGIC   q.create_date = current_date
+# MAGIC   or q.modified_date = current_date
 
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC INSERT into conference_trusted.satisfaction_rating
 # MAGIC SELECT
-# MAGIC   count(*)
+# MAGIC   first(session_id) as session_id,
+# MAGIC   first(session_title) as session_title,
+# MAGIC   first(question_id) as question_id,
+# MAGIC   first(poll_question) as question_text,
+# MAGIC   first(cast(poll_option as INT)) as rating,
+# MAGIC   count(option_text) as rating_count,
+# MAGIC   5 as target_rating,
+# MAGIC   current_date() as create_date,
+# MAGIC   current_user() as create_user
 # MAGIC from
-# MAGIC   question_options_temp_view;
+# MAGIC   satisfaction_temp_view
+# MAGIC GROUP BY
+# MAGIC   session_id,
+# MAGIC   option_text
 
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC select * from conference_trusted.satisfaction_rating
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC CREATE
+# MAGIC or Replace temp view dist_attendee_event_view as
 # MAGIC SELECT
-# MAGIC   count(*)
-# MAGIC from
-# MAGIC   polling_questions_master_temp_view
-# MAGIC WHERE
-# MAGIC   session_title = 'null';
+# MAGIC   count(*) as attendee_count,
+# MAGIC   event_id,
+# MAGIC   first(event_name) as event_name
+# MAGIC FROM
+# MAGIC   (
+# MAGIC     SELECT
+# MAGIC       DISTINCT s.event_id,
+# MAGIC       s.event_name,
+# MAGIC       a.attendee_id
+# MAGIC     FROM
+# MAGIC       conference_trusted.attendee_session_dim a
+# MAGIC       LEFT JOIN session_dim_temp_view s on s.session_id = a.session_id
+# MAGIC     where
+# MAGIC       a.create_date = current_date
+# MAGIC   )
+# MAGIC GROUP BY
+# MAGIC   event_id
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC CREATE
+# MAGIC or replace temp view dist_registrant_event_view as
+# MAGIC SELECT
+# MAGIC   count(*) as registrant_count,
+# MAGIC   event_id
+# MAGIC FROM
+# MAGIC   (
+# MAGIC     SELECT
+# MAGIC       DISTINCT event_id,
+# MAGIC       attendee_id
+# MAGIC     FROM
+# MAGIC       conference_trusted.event_registrant_dim
+# MAGIC     where
+# MAGIC       create_date = current_date
+# MAGIC       or modified_date = current_date
+# MAGIC   )
+# MAGIC group by
+# MAGIC   event_id
+
+# COMMAND ----------
+
+# MAGIC %sql 
+# MAGIC select * from dist_attendee_event_view
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select * from dist_registrant_event_view
 
 # COMMAND ----------
 
 # MAGIC %sql
 # MAGIC INSERT INTO
-# MAGIC   conference_refined.event_poll_fact
+# MAGIC   conference_trusted.event_attendee_fact
 # MAGIC SELECT
-# MAGIC   pa.question_id,
-# MAGIC   pt.option_text,
-# MAGIC   pa.question_response_count,
-# MAGIC   qa.option_count,
-# MAGIC   s.session_id,
+# MAGIC   a.event_id,
+# MAGIC   a.event_name,
+# MAGIC   r.registrant_count,
+# MAGIC   a.attendee_count,
 # MAGIC   current_date() as create_date,
 # MAGIC   current_user() as create_user
-# MAGIC FROM
-# MAGIC   question_options_temp_view pt
-# MAGIC   LEFT JOIN question_agg pa on pt.poll_question = pa.poll_question
-# MAGIC   LEFT JOIN option_agg qa on qa.option_text = pt.option_text
-# MAGIC   AND qa.poll_option = pt.poll_option
-# MAGIC   LEFT JOIN session_dim_temp_view s on s.session_title = pt.session_title
-# MAGIC ORDER BY
-# MAGIC   pt.poll_question
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC SELECT
-# MAGIC   *
 # MAGIC from
-# MAGIC   conference_refined.event_poll_fact
+# MAGIC   dist_attendee_event_view a
+# MAGIC   INNER JOIN dist_registrant_event_view r on r.event_id = a.event_id
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT * from conference_refined.attendee_dim;
+# MAGIC INSERT INTO
+# MAGIC   conference_trusted.attendee_session_fact
+# MAGIC SELECT
+# MAGIC   session_id,
+# MAGIC   session_title,
+# MAGIC   (
+# MAGIC     SELECT
+# MAGIC       count(*)
+# MAGIC     from
+# MAGIC       conference_trusted.attendee_session_dim
+# MAGIC     where
+# MAGIC       create_date = current_date
+# MAGIC   ) as event_total_attendee,
+# MAGIC   count(attendee_id) as session_total_attendee,
+# MAGIC   current_date() as create_date,
+# MAGIC   current_user() as current_user
+# MAGIC from
+# MAGIC   conference_trusted.attendee_session_dim
+# MAGIC where
+# MAGIC   create_date = current_date
+# MAGIC GROUP BY
+# MAGIC   session_id,
+# MAGIC   session_title
 
 # COMMAND ----------
 
