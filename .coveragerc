@@ -1,0 +1,9 @@
+[run]
+relative_files = True
+source = .
+omit = 
+  /local_disk0/*
+  /databricks/*
+  src/schema.py
+  tests/*
+  pipeline/*
