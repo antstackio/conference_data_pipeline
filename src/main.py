@@ -122,8 +122,9 @@ def convert_date_object(
 
     return target_df
 
-def read_from_raw_layer(table_name: str) -> DataFrame:
-    df = spark.read.table(f'conference_raw.{table_name}').filter(col('is_processed') == 'false')
+def read_from_raw_layer(spark:SparkSession, table_name: str) -> DataFrame:
+    df = spark.read.table(f'conference_raw.{table_name}')
+    df = df.filter(df.is_processed == 'false')
     display(df)
     return df
 

@@ -9,8 +9,10 @@ spark = SparkSession.builder \
                     .getOrCreate()
 
 
-def test_with_same_schema():
-    data_1 = [
+
+@pytest.fixture
+def ref_dataframe():
+    data = [
         [1,"a",20],
         [2,"b",21],
         [3,"c",22],
@@ -18,16 +20,39 @@ def test_with_same_schema():
         [5,"e",24],
     ]
 
-    df1 = spark.createDataFrame(data_1, ['id','name','age'])
+    df = spark.createDataFrame(data, ['id','name','age'])
+    return df
+                    
 
-    data_2 = [
+def test_with_same_schema(ref_dataframe):
+    data = [
         [6, "f", 40],
         [7, "g", 41],
     ]
 
-    df2 = spark.createDataFrame(data_2, ['id','name','age'])
+    df2 = spark.createDataFrame(data, ['id','name','age'])
 
-    df = union_dataframes(df1,df2)
+    df = union_dataframes(ref_dataframe,df2)
 
+    # Make sure the function returns a dataframe
     assert isinstance(df, DataFrame)
+    
+    # Make sure the count of the union df matches the sum of count
     assert df.count() == 7
+
+    df.show()
+
+
+
+def test_with_different_schema(ref_dataframe):
+    data = [
+        [6, "f", "ff", 40],
+        [7, "g", "gg", 41],
+    ]
+
+    df2 = spark.createDataFrame(data, ['id','name', 'address', 'age'])
+
+    with pytest.raises(Exception) as e_info:
+        df = union_dataframes(ref_dataframe,df2)
+
+    print(e_info)
