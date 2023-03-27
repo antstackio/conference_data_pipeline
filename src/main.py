@@ -165,3 +165,5 @@ def union_dataframes(df1: DataFrame, df2: DataFrame) -> DataFrame:
 
     result_df.printSchema()
     return result_df
+
+print("hello world")
