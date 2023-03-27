@@ -3,7 +3,7 @@ import pytest
 import os
 import sys
 
-repo_name = "conference_data_pipeline"
+repo_name = "dbc_etl_pipeline"
 
 # Get the path to this notebook, for example "/Workspace/Repos/{username}/{repo-name}".
 notebook_path = dbutils.notebook.entry_point.getDbutils().notebook().getContext().notebookPath().get()
@@ -19,7 +19,7 @@ print(os.getcwd())
 sys.dont_write_bytecode = True
 
 # Run pytest.
-retcode = pytest.main([".", "-v", "-p", "no:cacheprovider", "--cov","--cov-report", "xml"])
+retcode = pytest.main([".", "-s", "-vv", "-p", "no:cacheprovider", "--cov","--cov-report", "term"])
 
 # Fail the cell execution if there are any test failures.
 assert retcode == 0, "The pytest invocation failed. See the log for details."

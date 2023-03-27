@@ -6,7 +6,8 @@ on:
   pull_request:
     branches:
       - dev
-
+      - stage
+      - master
 env:
   DATABRICKS_HOST: https://dbc-89c9e463-7ff5.cloud.databricks.com/
 
@@ -17,41 +18,20 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Setup Python
-        uses: actions/setup-python@v2
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+          
+      - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
-      - name: Run the Test Runner Notebook
-        uses: databricks/run-notebook@v0.0.3
-        with:
-          workspace-notebook-path: "/Repos/${{ secrets.DATABRICKS_REPO_ROOT }}/conference_data_pipeline/tests/runner"
-          existing-cluster-id: "0923-083000-9wrpjw0r"
-          # Grant all users view permission on the notebook results
-          databricks-token: ${{ secrets.DATABRICKS_TOKEN }}
-          access-control-list-json: >
-            [
-              {
-                "group_name": "users",
-                "permission_level": "CAN_VIEW"
-              }
-            ]
+
+      - name: Install tox and any other packages
+        run: pip install tox && pip install pyspark
+
+      - name: Run tox
+        run: tox -e py
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      - name: Cleanup the Coverage State Files
-        uses: databricks/run-notebook@v0.0.3
-        with:
-          workspace-notebook-path: "/Repos/${{ secrets.DATABRICKS_REPO_ROOT }}/conference_data_pipeline/tests/coverage-cleanup"
-          existing-cluster-id: "0923-083000-9wrpjw0r"
-          # Grant all users view permission on the notebook results
-          databricks-token: ${{ secrets.DATABRICKS_TOKEN }}
-          access-control-list-json: >
-            [
-              {
-                "group_name": "users",
-                "permission_level": "CAN_VIEW"
-              }
-            ]
