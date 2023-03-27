@@ -29,7 +29,6 @@ def snowflake_options(env):
     "sfDatabase": sfDatabase,
     "sfRole" : sfRole,
     "sfSchema": schema,
-    "sfWarehouse": sfWarehouse,
-    "truncate_table": "on"
+    "sfWarehouse": sfWarehouse
     }
     return options

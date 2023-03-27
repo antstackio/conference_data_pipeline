@@ -59,6 +59,7 @@ with open("../SqlDBM/src/Tables/conformed.session_poll_fact.sql") as file:
 
 with open("../SqlDBM/src/Tables/conformed.attendee_session_dim.sql") as file:
     ddl = file.read()
+#     print(ddl)
     sfUtils.runQuery(options, ddl)
 
 # COMMAND ----------
