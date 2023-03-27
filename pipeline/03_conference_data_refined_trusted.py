@@ -416,8 +416,8 @@ registrants_df.createOrReplaceTempView("new_attendee_master_temp_view")
 # MAGIC from
 # MAGIC   conference_trusted.session_dim
 # MAGIC where
-# MAGIC   create_date = current_date
-# MAGIC   or modified_date = current_date;
+# MAGIC   create_date = '2023-03-23'
+# MAGIC   or modified_date = '2023-03-23';
 
 # COMMAND ----------
 
@@ -695,6 +695,11 @@ poll_questions_df.createOrReplaceTempView("polling_questions_master_temp_view")
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC select * from conference_trusted.question_dim;
+
+# COMMAND ----------
+
+# MAGIC %sql
 # MAGIC create
 # MAGIC or replace temp view satisfaction_temp_view as
 # MAGIC SELECT
@@ -711,8 +716,13 @@ poll_questions_df.createOrReplaceTempView("polling_questions_master_temp_view")
 # MAGIC   and t.poll_question = 'How would you like to rate the session out of five?'
 # MAGIC   left join session_dim_temp_view s on s.session_title = t.session_title
 # MAGIC where
-# MAGIC   q.create_date = current_date
-# MAGIC   or q.modified_date = current_date
+# MAGIC   q.create_date = '2023-03-24'
+# MAGIC   or q.modified_date = '2023-03-24'
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select * from satisfaction_temp_view;
 
 # COMMAND ----------
 
@@ -837,6 +847,26 @@ poll_questions_df.createOrReplaceTempView("polling_questions_master_temp_view")
 # MAGIC GROUP BY
 # MAGIC   session_id,
 # MAGIC   session_title
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC UPDATE conference_refined.event SET modified_date = current_date(), modified_user = current_user(), is_processed = TRUE WHERE is_processed = FALSE;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC UPDATE conference_refined.session SET modified_date = current_date(), modified_user = current_user(), is_processed = TRUE WHERE is_processed = FALSE;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC UPDATE conference_refined.registrant SET modified_date = current_date(), modified_user = current_user(), is_processed = TRUE WHERE is_processed = FALSE;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC UPDATE conference_refined.polling_questions SET modified_date = current_date(), modified_user = current_user(), is_processed = TRUE WHERE is_processed = FALSE;
 
 # COMMAND ----------
 
