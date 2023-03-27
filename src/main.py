@@ -104,44 +104,6 @@ def compare_schema(inferred_schema: list, defined_schema: list, filename: str) -
         return return_object
 
 
-def compare_schema(inferred_schema: list, defined_schema: list, filename: str) -> dict:
-    valid_schema = False
-    missing_columns = None
-    return_object = {
-        "valid_schema": valid_schema,
-        "missing_columns": missing_columns,
-        "filename": filename,
-    }
-    try:
-        if len(inferred_schema) == len(defined_schema):
-            result = all(i == j for i, j in zip(inferred_schema, defined_schema))
-            if result:
-                valid_schema = True
-            else:
-                valid_schema = False
-        elif len(inferred_schema) > len(defined_schema):
-            # extra columns
-            count = 0
-            for i, v in enumerate(defined_schema):
-                if inferred_schema[i] == v:
-                    count += 1
-            valid_schema = True if count == len(defined_schema) else False
-        else:
-            # missing columns
-            valid_schema = False
-            set_inferred_schema = set(inferred_schema)
-            set_defined_schema = set(defined_schema)
-            missing_columns = list(set_defined_schema.difference(set_inferred_schema))
-
-        return_object["valid_schema"] = valid_schema
-        return_object["missing_columns"] = missing_columns
-
-        return return_object
-    except Exception as e:
-        print(e)
-        return return_object
-
-
 def convert_schema_to_list(schema: StructType) -> list:
     result = [i.name for i in schema]
     return result
