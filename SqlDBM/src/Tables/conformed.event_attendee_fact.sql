@@ -8,5 +8,7 @@ CREATE TABLE conformed.event_attendee_fact
  event_id         bigint NOT NULL,
  event_name       string NOT NULL,
  registrant_count int NOT NULL,
- attendee_count   int NOT NULL
+ attendee_count   int NOT NULL,
+ create_date      date NOT NULL,
+ create_user      string NOT NULL
 );
