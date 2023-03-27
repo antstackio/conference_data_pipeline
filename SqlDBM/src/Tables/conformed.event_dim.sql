@@ -17,6 +17,6 @@ CREATE TABLE conformed.event_dim
  country       string NOT NULL,
  create_date   date NOT NULL,
  create_user   string NOT NULL,
- modified_date date NOT NULL,
+ modified_date string NOT NULL,
  modified_user string NOT NULL
 );

@@ -5,7 +5,7 @@
 -- ************************************** conformed.attendee_session_dim
 CREATE TABLE conformed.attendee_session_dim
 (
- session_id    string NOT NULL,
+ session_id    bigint NOT NULL,
  session_title string NOT NULL,
  attendee_id   bigint NOT NULL,
  attendee_type string NOT NULL,
