@@ -178,4 +178,28 @@ def add_columns_to_refined_tables(df: DataFrame) -> DataFrame:
     target_df.printSchema()
     return target_df
 
+def add_columns_to_refined_tables(df: DataFrame) -> DataFrame:
+    """Adds required columns to input DataFrame"""
+    target_df = (
+        df.withColumn("create_user", lit(current_user))
+        .withColumn("create_date", lit(current_date()))
+        .withColumn("modified_user", lit(None).cast(StringType()))
+        .withColumn("modified_date", lit(None).cast(DateType()))
+        .withColumn("is_processed", lit(False))
+    )
+    target_df.printSchema()
+    return target_df
+
+def add_columns_to_refined_tables(df: DataFrame) -> DataFrame:
+    """Adds required columns to input DataFrame"""
+    target_df = (
+        df.withColumn("create_user", lit(current_user))
+        .withColumn("create_date", lit(current_date()))
+        .withColumn("modified_user", lit(None).cast(StringType()))
+        .withColumn("modified_date", lit(None).cast(DateType()))
+        .withColumn("is_processed", lit(False))
+    )
+    target_df.printSchema()
+    return target_df
+
 
