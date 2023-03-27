@@ -78,3 +78,13 @@ with open("../SqlDBM/src/Tables/conformed.event_registrant_dim.sql") as file:
 with open("../SqlDBM/src/Tables/conformed.question_attendee_dim.sql") as file:
     ddl = file.read()
     sfUtils.runQuery(options, ddl)
+
+# COMMAND ----------
+
+with open("../SqlDBM/src/Tables/conformed.satisfaction_rating.sql") as file:
+    ddl = file.read()
+    sfUtils.runQuery(options, ddl)
+
+# COMMAND ----------
+
+
