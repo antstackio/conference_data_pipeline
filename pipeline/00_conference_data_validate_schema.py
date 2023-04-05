@@ -14,6 +14,10 @@ spark = SparkSession.builder.getOrCreate()
 
 # COMMAND ----------
 
+print(src_file_path)
+
+# COMMAND ----------
+
 # MAGIC %md
 
 # COMMAND ----------
