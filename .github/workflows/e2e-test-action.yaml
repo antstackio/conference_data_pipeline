@@ -29,12 +29,11 @@ jobs:
           $url \
           -d @./tests/end_to_end_tests/e2e_job.json)
           echo "$response"
-          export test_job_id="$(echo "$response" | jq '.job_id' )"
-          echo "$test_job_id" 
+          echo test_job_id="$(echo "$response" | jq '.job_id' )" >> $GITHUB_ENV
 
       - name: Run end to end tests
         run: |
-          echo "$test_job_id" 
+          echo ${{ env.test_job_id}} 
           url="$DATABRICKS_HOST/api/2.1/jobs/run-now"
           echo $url
           response=$(curl -X POST -H 'content-type: application/json' \
