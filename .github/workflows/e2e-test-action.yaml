@@ -32,6 +32,7 @@ jobs:
           echo test_job_id="$(echo "$response" | jq '.job_id' )" >> $GITHUB_ENV
 
       - name: Run end to end tests
+        id: run-e2e-test
         run: | 
           url="$DATABRICKS_HOST/api/2.1/jobs/run-now"
           echo $url
@@ -40,11 +41,11 @@ jobs:
           $url \
           -d '{"job_id": ${{ env.test_job_id}}}')
           echo "$response"
-          echo test_run_id="$(echo "$response" | jq '.run_id' )" >> $GITHUB_ENV
+          echo test_run_id="$(echo "$response" | jq '.run_id' )" >> $GITHUB_OUTPUT
 
       - name: Wait for the test job to finish
         run: |
-          echo ${{ env.* }}
+          echo ${{ steps.run-e2e-test.outputs.test_run_id }}
           run_status=0
           echo "$run_status"
           while [ "$run_status" -ne 1 ]
@@ -54,7 +55,7 @@ jobs:
             response=$(curl -sSG -H 'content-type: application/json' \
             -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
             $url \
-            -d run_id=${{ env.test_job_run_id}})
+            -d run_id=${{ steps.run-e2e-test.outputs.test_run_id }})
             echo "$(echo "$response" | jq '.state.life_cycle_state')" : "$(echo "$response" | jq '.run_page_url')"
             status="$(echo "$response" | jq '.state.result_state')"
             if [ "$status" == "\"SUCCESS\"" ]; then
@@ -87,16 +88,18 @@ jobs:
           $url \
           -d '{"run_id": ${{ env.test_job_run_id}}}')
           echo "$response"
-          echo test_job_run_url="$(echo "$response" | jq '.metadata.run_page_url' )" >> $GITHUB_ENV
-      - name: Post the job output url to pr conversation
-        env:
-            URL: ${{ github.event.pull_request.comments_url }}
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          curl \
-            -X POST \
-            $URL \
-            -H "Content-Type: application/json" \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            --data '{ "body": "The output of the end to end job run: ${{ env.test_job_run_url}}" }'
+          test_job_run_url="$(echo "$response" | jq '.metadata.run_page_url' )"
+          echo "$test_job_run_url"
+          echo "The output of the end to end job run: '$test_job_run_url'" >> $GITHUB_STEP_SUMMARY
+      # - name: Post the job output url to pr conversation
+      #   env:
+      #       URL: ${{ github.event.pull_request.comments_url }}
+      #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     curl \
+      #       -X POST \
+      #       $URL \
+      #       -H "Content-Type: application/json" \
+      #       -H "Authorization: token $GITHUB_TOKEN" \
+      #       --data '{ "body": "The output of the end to end job run: ${{ env.test_job_run_url}}" }'
       
