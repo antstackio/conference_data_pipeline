@@ -41,11 +41,10 @@ jobs:
           -d '{"job_id": ${{ env.test_job_id}}}')
           echo "$response"
           echo test_run_id="$(echo "$response" | jq '.run_id' )" >> $GITHUB_ENV
-          echo ${{ env }}
 
       - name: Wait for the test job to finish
         run: |
-          echo ${{ env.test_job_run_id }}
+          echo ${{ env.* }}
           run_status=0
           echo "$run_status"
           while [ "$run_status" -ne 1 ]
