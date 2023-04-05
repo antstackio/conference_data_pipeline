@@ -33,6 +33,7 @@ jobs:
 
       - name: Run end to end tests
         run: |
+          echo "$test_job_id" 
           url="$DATABRICKS_HOST/api/2.1/jobs/run-now"
           echo $url
           response=$(curl -X POST -H 'content-type: application/json' \
