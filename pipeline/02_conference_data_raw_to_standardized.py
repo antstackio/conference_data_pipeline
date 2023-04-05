@@ -29,6 +29,28 @@ from pyspark.dbutils import DBUtils
 # COMMAND ----------
 
 spark = SparkSession.builder.getOrCreate()
+dbutils = DBUtils(spark)
+
+# COMMAND ----------
+
+require_processing = dbutils.jobs.taskValues.get(
+    taskKey="schema_validation", key="execute_raw_layer"
+)
+if not require_processing:
+    dbutils.notebook.exit("File not found! exiting the notebook!")
+else:
+    print("Proceeding to execute current notebook!")
+
+# COMMAND ----------
+
+require_processing = dbutils.jobs.taskValues.get(
+    taskKey="source_to_raw", key="execute_refined_layer"
+)
+
+if not require_processing:
+    dbutils.notebook.exit("Failed to load one or more files in raw layer! exiting the notebook!")
+else:
+    print("Proceeding to execute current notebook!")  
 
 # COMMAND ----------
 
@@ -285,10 +307,6 @@ print("Total attendee count", attendee.count(), sep=" :: ")
 
 # MAGIC %md
 # MAGIC ### Load
-
-# COMMAND ----------
-
-dbutils = DBUtils(spark)
 
 # COMMAND ----------
 
