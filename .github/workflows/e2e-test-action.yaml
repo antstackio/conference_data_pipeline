@@ -30,6 +30,7 @@ jobs:
           -d @./tests/end_to_end_tests/e2e_job.json)
           echo "$response"
           export test_job_id="$(echo "$response" | jq '.job_id' )"
+          echo "$test_job_id" 
 
       - name: Run end to end tests
         run: |
