@@ -44,6 +44,7 @@ jobs:
           echo test_run_id="$(echo "$response" | jq '.run_id' )" >> $GITHUB_OUTPUT
 
       - name: Wait for the test job to finish
+        id: wait-for-job-run
         run: |
           echo ${{ steps.run-e2e-test.outputs.test_run_id }}
           run_status=0
@@ -59,6 +60,7 @@ jobs:
             status="$(echo "$response" | jq '.state.result_state')"
             if [ "$status" == "\"SUCCESS\"" ]; then
               echo "$status"
+              echo test_job_run_url="$(echo "$response" | jq '.run_page_url')" >> $GITHUB_OUTPUT
               run_status=1;
             elif [ "$status" == "\"FAILED\"" ] || [ "$status" == "\"TIMEDOUT\"" ] || [ "$status" == "\"CANCELED\"" ]; then
               echo "$status"
@@ -86,19 +88,17 @@ jobs:
           -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
           $url \
           -d '{"job_id": ${{ env.test_job_id}}}')
-          echo "$response"
-          test_job_run_url="$(echo "$response" | jq '.metadata.run_page_url' )"
-          echo "$test_job_run_url"
-          echo "The output of the end to end job run: '$test_job_run_url'" >> $GITHUB_STEP_SUMMARY
-      # - name: Post the job output url to pr conversation
-      #   env:
-      #       URL: ${{ github.event.pull_request.comments_url }}
-      #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: |
-      #     curl \
-      #       -X POST \
-      #       $URL \
-      #       -H "Content-Type: application/json" \
-      #       -H "Authorization: token $GITHUB_TOKEN" \
-      #       --data '{ "body": "The output of the end to end job run: ${{ env.test_job_run_url}}" }'
+          echo ${{ steps.wait-for-job-run.outputs.test_run_id }}
+          echo "The output of the end to end job run: ${{ steps.wait-for-job-run.outputs.test_job_run_url }}" >> $GITHUB_STEP_SUMMARY
+      - name: Post the job output url to pr conversation
+        env:
+            URL: ${{ github.event.pull_request.comments_url }}
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl \
+            -X POST \
+            $URL \
+            -H "Content-Type: application/json" \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            --data '{ "body": "The output of the end to end job run: ${{ steps.wait-for-job-run.outputs.test_job_run_url }}" }'
       
