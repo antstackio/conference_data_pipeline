@@ -19,6 +19,7 @@ jobs:
           echo "`jq --arg GITHUB_HEAD_REF $(echo $GITHUB_HEAD_REF) '.git_source.git_branch=$GITHUB_HEAD_REF' ./tests/end_to_end_tests/e2e_job.json`" > ./tests/end_to_end_tests/e2e_job.json 
           echo "`jq --arg GITHUB_HEAD_REF $(echo PR_to_dev_e2e_test_\"$GITHUB_HEAD_REF\") '.name=$GITHUB_HEAD_REF' ./tests/end_to_end_tests/e2e_job.json`" > ./tests/end_to_end_tests/e2e_job.json 
           cat ./tests/end_to_end_tests/e2e_job.json
+
       - name: Create end to end test job
         run: |
           url="$DATABRICKS_HOST/api/2.1/jobs/create"
@@ -29,6 +30,7 @@ jobs:
           -d @./tests/end_to_end_tests/e2e_job.json)
           echo "$response"
           export test_job_id=$(echo "$response" | jq '.job_id' )
+
       - name: Run end to end tests
         run: |
           url="$DATABRICKS_HOST/api/2.1/jobs/run-now"
@@ -36,7 +38,7 @@ jobs:
           response=$(curl -X POST -H 'content-type: application/json' \
           -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
           $url \
-          -d '{"job_id": $(echo $test_job_id)}')
+          -d '{"job_id": "$(echo $test_job_id)"}')
           echo "$response"
           export test_job_run_id=$(echo "$response" | jq '.run_id' )
 
