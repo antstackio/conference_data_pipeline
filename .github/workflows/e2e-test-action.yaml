@@ -12,4 +12,4 @@ jobs:
     environment: dev
     steps:
       - name: Run end to end tests
-        run: ls /home/runner/work/conference_data_pipeline/conference_data_pipeline/tests/
+        run: ls /home/runner/work/conference_data_pipeline/conference_data_pipeline/
