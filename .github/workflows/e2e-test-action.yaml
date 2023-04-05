@@ -13,4 +13,4 @@ jobs:
     steps:
       - name: Run end to end tests
         run: |
-          ls
+          echo $pwd
