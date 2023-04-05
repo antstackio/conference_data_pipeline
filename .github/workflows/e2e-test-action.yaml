@@ -103,5 +103,5 @@ jobs:
             -H "Content-Type: application/vnd.github+json" \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            --data '{ "body": "The output of the end to end job run: ${{ steps.wait-for-job-run.outputs.test_job_run_url }}" }'
+            --data '{ "body": "The output of the end to end job run => ${{ steps.wait-for-job-run.outputs.test_job_run_url }}" }'
       
