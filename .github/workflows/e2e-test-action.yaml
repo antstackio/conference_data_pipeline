@@ -12,5 +12,4 @@ jobs:
     environment: dev
     steps:
       - name: Run end to end tests
-        run: |
-          echo $pwd
+        run: pwd
