@@ -20,5 +20,5 @@ jobs:
           response=$(curl -X POST -H 'content-type: application/json' \
           -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
           $url \
-          -d $(cat tests/end_to_end_tests/e2e_job.json | jq .))
+          -d @./tests/end_to_end_tests/e2e_job.json)
           echo "$response"
