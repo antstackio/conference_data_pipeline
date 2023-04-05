@@ -11,5 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
       - name: Run end to end tests
-        run: ls /home/runner/work/conference_data_pipeline/conference_data_pipeline/
+        run: |
+          url="$DATABRICKS_HOST/api/2.1/jobs/runs/submit"
+          echo $url
+          response=$(curl -X POST -H 'content-type: application/json' \
+          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+          $url \
+          -d $(cat tests/end_to_end_tests/e2e_job.json | jq .))
+          echo "$response"
