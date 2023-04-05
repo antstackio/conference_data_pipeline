@@ -48,7 +48,7 @@ jobs:
           echo "$run_status"
           while [ "$run_status" -ne 1 ]
           do
-            url="$DATABRICKS_HOST/api/2.1/jobs/runs/get-output?run_id=${{ env.test_job_id}}}"
+            url="$DATABRICKS_HOST/api/2.1/jobs/runs/get-output?run_id=${{ env.test_job_id}}"
             echo $url
             response=$(curl -X get -H 'content-type: application/json' \
             -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
