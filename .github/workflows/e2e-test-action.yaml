@@ -97,6 +97,6 @@ jobs:
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             $URL \
-            -d '{ "body": ${{ github.event.pull_request.comments_url }} }')
+            -d '{ \"body\": \"${{ github.event.pull_request.comments_url }}\" }')
             echo "$response"
       
