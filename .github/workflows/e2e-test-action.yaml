@@ -42,25 +42,25 @@ jobs:
           echo "$response"
           echo test_job_run_id="$(echo "$response" | jq '.run_id' )" >> $GITHUB_ENV
 
-      # - name: Wait for the test job to finish
-      #   run: |
-      #     run_status=0
-      #     echo "$run_status"
-      #     while [ "$run_status" -ne 1 ]
-      #     do
-      #       url="$DATABRICKS_HOST/api/2.1/jobs/runs/get-output?run_id=$(echo $test_job_run_id)"
-      #       echo $url
-      #       response=$(curl -X get -H 'content-type: application/json' \
-      #       -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
-      #       $url)
-      #       status="$response" | jq '.state | select(.result_state)'
-      #       if [ ! -z "$status" ]; then
-      #         run_status=1
-      #       fi
-      #       echo "still running"
-      #       sleep 2
-      #     done
-      #     echo "run finished"
+      - name: Wait for the test job to finish
+        run: |
+          run_status=0
+          echo "$run_status"
+          while [ "$run_status" -ne 1 ]
+          do
+            url="$DATABRICKS_HOST/api/2.1/jobs/runs/get-output?run_id=${{ env.test_job_id}}}"
+            echo $url
+            response=$(curl -X get -H 'content-type: application/json' \
+            -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+            $url)
+            status="$response" | jq '.state | select(.result_state)'
+            if [ ! -z "$status" ]; then
+              run_status=1
+            fi
+            echo "still running"
+            sleep 2
+          done
+          echo "run finished"
             
       # - name: Get Job run output
       #   run: |
