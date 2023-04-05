@@ -85,7 +85,7 @@ jobs:
           response=$(curl -X POST -H 'content-type: application/json' \
           -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
           $url \
-          -d '{"run_id": ${{ env.test_job_run_id}}}')
+          -d '{"run_id": ${{ env.test_job_id}}}')
           echo "$response"
           test_job_run_url="$(echo "$response" | jq '.metadata.run_page_url' )"
           echo "$test_job_run_url"
