@@ -78,7 +78,7 @@ print(inperson_file_exists_result)
 # COMMAND ----------
 
 if inperson_file_exists:
-    inperson_defined_schema = convert_schema_to_list(attendee_schema)
+    inperson_defined_schema = convert_schema_to_list(inperson_attendee_schema)
     print("Inperson Defined Schema ", inperson_defined_schema, sep=":: ")
     print("Inperson Inferred Schema ", inperson_inferred_schema, sep=":: ")
 
@@ -101,7 +101,7 @@ print(virtual_file_exists_result)
 # COMMAND ----------
 
 if virtual_file_exists:
-    virtual_defined_schema = convert_schema_to_list(attendee_schema)
+    virtual_defined_schema = convert_schema_to_list(virtual_attendee_schema)
     print("Virtual Defined Schema ", virtual_defined_schema, sep=":: ")
     print("Virtual Inferred Schema ", virtual_inferred_schema, sep=":: ")
 
@@ -137,4 +137,26 @@ if questions_file_exists:
 
 # COMMAND ----------
 
-# MAGIC %md
+missing_files = False
+invalid_schema = False
+
+missing_files = any(
+    list(filter(lambda x: not x["file_exists"], file_exists_check_list))
+)
+invalid_schema = any(
+    list(filter(lambda x: not x["valid_schema"], schema_validation_check_list))
+)
+
+print("Missing Files", missing_files, sep=" :: ")
+print("Invalid Schema", invalid_schema, sep=" :: ")
+
+# COMMAND ----------
+
+if missing_files or invalid_schema:
+    dbutils.jobs.taskValues.set(key="execute_raw_layer", value=False)
+else:
+    dbutils.jobs.taskValues.set(key="execute_raw_layer", value=True)
+
+# COMMAND ----------
+
+
