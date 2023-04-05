@@ -12,4 +12,4 @@ jobs:
     environment: dev
     steps:
       - name: Run end to end tests
-        run: ls ./tests/end_to_end_tests/
+        run: ls 
