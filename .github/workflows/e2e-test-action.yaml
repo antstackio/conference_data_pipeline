@@ -49,16 +49,16 @@ jobs:
           while [ "$run_status" -ne 1 ]
           do
             url="$DATABRICKS_HOST/api/2.1/jobs/runs/get-output?run_id=${{ env.test_job_id}}"
-            echo $url
-            response=$(curl -X get -H 'content-type: application/json' \
+            response=$(curl -sS -X get -H 'content-type: application/json' \
             -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
             $url)
             status="$response" | jq '.state | select(.result_state)'
             if [ ! -z "$status" ]; then
               run_status=1
             fi
-            echo "still running"
-            sleep 2
+            echo "Status: "$response" | jq '.state | select(.life_cycle_state)'"
+            echo "Output: "$response" | jq '.run_page_url'"
+            sleep 8
           done
           echo "run finished"
             
