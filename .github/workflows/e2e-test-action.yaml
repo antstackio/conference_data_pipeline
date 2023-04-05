@@ -52,45 +52,49 @@ jobs:
             response=$(curl -sSG -H 'content-type: application/json' \
             -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
             $url \
-            -d run_id=${{ env.test_job_id}})
-            status="$response" | jq '.state | select(.result_state)'
-            echo "$status"
-            if [ ! -z "$status" ]; then
-              run_status=1
+            -d run_id=${{ env.test_job_run_id}})
+            echo ""$(echo "$response" | jq '.state.life_cycle_state')" : "$(echo "$response" | jq '.run_page_url')""
+            status="$(echo "$response" | jq '.state.result_state')"
+            if [ "$status" == "\"SUCCESS\"" ]; then
+              echo "$status"
+              run_status=1;
+            elif [ "$status" == "\"FAILED\"" ] || [ "$status" == "\"TIMEDOUT\"" ] || [ "$status" == "\"CANCELED\"" ]; then
+              echo "$status"
+              exit 1;
+            else
+              sleep 8;
             fi
-            echo "Status: "$response" | jq '.state | select(.life_cycle_state)'"
-            echo "Output: "$response" | jq '.run_page_url'"
-            sleep 8
           done
           echo "run finished"
             
       # - name: Get Job run output
       #   run: |
-      #     url="$DATABRICKS_HOST/api/2.1/jobs/runs/get-output?run_id=$(echo $test_job_run_id)"
+      #     url="$DATABRICKS_HOST/api/2.1/jobs/runs/get-output"
       #     echo $url
-      #     response=$(curl -X get -H 'content-type: application/json' \
-      #     -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
-      #     $url)
-      #     echo "$response"
-      # - name: Delete the test job
-      #   run: |
-      #     url="$DATABRICKS_HOST/api/2.1/jobs/delete"
-      #     echo $url
-      #     response=$(curl -X POST -H 'content-type: application/json' \
+      #     response=$(curl -sSG -H 'content-type: application/json' \
       #     -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
       #     $url \
-      #     -d '{"run_id": $(echo $test_job_run_id)}')
+      #     -d run_id=${{ env.test_job_run_id}})
       #     echo "$response"
-      #     export test_job_run_url=$(echo "$response" | jq '.metadata.run_page_url' )
-      # - name: Post the job output url to pr conversation
-      #   env:
-      #       URL: ${{ github.event.pull_request.comments_url }}
-      #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: |
-      #     curl \
-      #       -X POST \
-      #       $URL \
-      #       -H "Content-Type: application/json" \
-      #       -H "Authorization: token $GITHUB_TOKEN" \
-      #       --data '{ "body": "The output of the end to end job run: $(echo $test_job_run_url)" }'
+      - name: Delete the test job
+        run: |
+          url="$DATABRICKS_HOST/api/2.1/jobs/delete"
+          echo $url
+          response=$(curl -X POST -H 'content-type: application/json' \
+          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+          $url \
+          -d '{"run_id": ${{ env.test_job_run_id}}}')
+          echo "$response"
+          echo test_job_run_url="$(echo "$response" | jq '.metadata.run_page_url' )" >> $GITHUB_ENV
+      - name: Post the job output url to pr conversation
+        env:
+            URL: ${{ github.event.pull_request.comments_url }}
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl \
+            -X POST \
+            $URL \
+            -H "Content-Type: application/json" \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            --data '{ "body": "The output of the end to end job run: ${{ env.test_job_run_url}}" }'
       
