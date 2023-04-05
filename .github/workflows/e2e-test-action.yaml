@@ -48,11 +48,11 @@ jobs:
           echo "$run_status"
           while [ "$run_status" -ne 1 ]
           do
-            url="$DATABRICKS_HOST/api/2.1/jobs/runs/get-output?run_id=${{ env.test_job_id}}"
-            response=$(curl -sS -X get -H 'content-type: application/json' \
+            url="$DATABRICKS_HOST/api/2.1/jobs/runs/get-output"
+            response=$(curl -sSG -H 'content-type: application/json' \
             -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
             $url \
-            -d {})
+            -d run_id=${{ env.test_job_id}})
             status="$response" | jq '.state | select(.result_state)'
             echo "$status"
             if [ ! -z "$status" ]; then
