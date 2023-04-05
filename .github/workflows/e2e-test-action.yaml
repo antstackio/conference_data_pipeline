@@ -15,8 +15,8 @@ jobs:
         uses: actions/checkout@v3
       - name: Add github branch info to create job request body
         run: |
-          echo "`jq '.git_source.git_branch="$(echo $GITHUB_HEAD_REF)"' ./tests/end_to_end_tests/e2e_job.json`" > ./tests/end_to_end_tests/e2e_job.json 
-          echo "`jq '.name="PR_to_dev_e2e_test_$(echo $GITHUB_HEAD_REF)"' ./tests/end_to_end_tests/e2e_job.json`" > ./tests/end_to_end_tests/e2e_job.json 
+          echo "`jq '.git_source.git_branch=$(echo $GITHUB_HEAD_REF)' ./tests/end_to_end_tests/e2e_job.json`" > ./tests/end_to_end_tests/e2e_job.json 
+          echo "`jq '.name=PR_to_dev_e2e_test_$(echo $GITHUB_HEAD_REF)' ./tests/end_to_end_tests/e2e_job.json`" > ./tests/end_to_end_tests/e2e_job.json 
           cat ./tests/end_to_end_tests/e2e_job.json
       - name: Create end to end test job
         run: |
@@ -39,53 +39,53 @@ jobs:
           echo "$response"
           export test_job_run_id=$(echo "$response" | jq '.run_id' )
 
-      - name: Wait for the test job to finish
-        run: |
-          run_status=0
-          echo "$run_status"
-          while [ "$run_status" -ne 1 ]
-          do
-            url="$DATABRICKS_HOST/api/2.1/jobs/runs/get-output?run_id=$(echo $test_job_run_id)"
-            echo $url
-            response=$(curl -X get -H 'content-type: application/json' \
-            -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
-            $url)
-            status="$response" | jq '.state | select(.result_state)'
-            if [ ! -z "$status" ]; then
-              run_status=1
-            fi
-            echo "still running"
-            sleep 2
-          done
-          echo "run finished"
+      # - name: Wait for the test job to finish
+      #   run: |
+      #     run_status=0
+      #     echo "$run_status"
+      #     while [ "$run_status" -ne 1 ]
+      #     do
+      #       url="$DATABRICKS_HOST/api/2.1/jobs/runs/get-output?run_id=$(echo $test_job_run_id)"
+      #       echo $url
+      #       response=$(curl -X get -H 'content-type: application/json' \
+      #       -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+      #       $url)
+      #       status="$response" | jq '.state | select(.result_state)'
+      #       if [ ! -z "$status" ]; then
+      #         run_status=1
+      #       fi
+      #       echo "still running"
+      #       sleep 2
+      #     done
+      #     echo "run finished"
             
-      - name: Get Job run output
-        run: |
-          url="$DATABRICKS_HOST/api/2.1/jobs/runs/get-output?run_id=$(echo $test_job_run_id)"
-          echo $url
-          response=$(curl -X get -H 'content-type: application/json' \
-          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
-          $url)
-          echo "$response"
-      - name: Delete the test job
-        run: |
-          url="$DATABRICKS_HOST/api/2.1/jobs/delete"
-          echo $url
-          response=$(curl -X POST -H 'content-type: application/json' \
-          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
-          $url \
-          -d '{"run_id": $(echo $test_job_run_id)}')
-          echo "$response"
-          export test_job_run_url=$(echo "$response" | jq '.metadata.run_page_url' )
-      - name: Post the job output url to pr conversation
-        env:
-            URL: ${{ github.event.pull_request.comments_url }}
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          curl \
-            -X POST \
-            $URL \
-            -H "Content-Type: application/json" \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            --data '{ "body": "The output of the end to end job run: $(echo $test_job_run_url)" }'
+      # - name: Get Job run output
+      #   run: |
+      #     url="$DATABRICKS_HOST/api/2.1/jobs/runs/get-output?run_id=$(echo $test_job_run_id)"
+      #     echo $url
+      #     response=$(curl -X get -H 'content-type: application/json' \
+      #     -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+      #     $url)
+      #     echo "$response"
+      # - name: Delete the test job
+      #   run: |
+      #     url="$DATABRICKS_HOST/api/2.1/jobs/delete"
+      #     echo $url
+      #     response=$(curl -X POST -H 'content-type: application/json' \
+      #     -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+      #     $url \
+      #     -d '{"run_id": $(echo $test_job_run_id)}')
+      #     echo "$response"
+      #     export test_job_run_url=$(echo "$response" | jq '.metadata.run_page_url' )
+      # - name: Post the job output url to pr conversation
+      #   env:
+      #       URL: ${{ github.event.pull_request.comments_url }}
+      #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     curl \
+      #       -X POST \
+      #       $URL \
+      #       -H "Content-Type: application/json" \
+      #       -H "Authorization: token $GITHUB_TOKEN" \
+      #       --data '{ "body": "The output of the end to end job run: $(echo $test_job_run_url)" }'
       
