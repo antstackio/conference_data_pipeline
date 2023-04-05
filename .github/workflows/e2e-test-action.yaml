@@ -13,6 +13,7 @@ jobs:
     steps:
       - name: Run end to end tests
         run: |
+          ls
           url="$DATABRICKS_HOST/api/2.1/jobs/runs/submit"
           echo $url
           response=$(curl -X POST -H 'content-type: application/json' \
