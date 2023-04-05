@@ -1,4 +1,4 @@
-name: Deployment
+name: End to end test
 on:
   pull_request:
     branches:
@@ -18,5 +18,5 @@ jobs:
           response=$(curl -X POST -H 'content-type: application/json' \
           -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
           $url \
-          -d $(cat ./e2e_job.json | jq .))
+          -d $(cat e2e_job.json | jq .))
           echo "$response"
