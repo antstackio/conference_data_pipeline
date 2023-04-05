@@ -1,6 +1,7 @@
 # Databricks notebook source
 from src.main import convert_date_object, read_data_from_raw
 from pyspark.sql import SparkSession
+from pyspark.dbutils import DBUtils
 from pyspark.sql.functions import (
     lit,
     current_timestamp,
@@ -17,6 +18,32 @@ from pyspark.sql.functions import (
 # COMMAND ----------
 
 spark = SparkSession.builder.getOrCreate()
+
+# COMMAND ----------
+
+dbutils = DBUtils(spark)
+
+# COMMAND ----------
+
+require_processing = dbutils.jobs.taskValues.get(
+    taskKey="schema_validation", key="execute_raw_layer", debugValue=True # Change it to False
+)
+if not require_processing:
+    dbutils.notebook.exit("File not found! exiting the notebook!")
+else:
+    print("Proceeding to execute current notebook!")
+
+# COMMAND ----------
+
+
+require_processing = dbutils.jobs.taskValues.get(
+    taskKey="source_to_raw", key="execute_refined_layer", debugValue=True # Change it to False
+)
+
+if not require_processing:
+    dbutils.notebook.exit("Failed to load one or more files in raw layer! exiting the notebook!")
+else:
+    print("Proceeding to execute current notebook!")  
 
 # COMMAND ----------
 
