@@ -90,6 +90,7 @@ jobs:
           echo $GITHUB_TOKEN 
           output_url='abc'
           comment_body="The output of the end to end job run => $output_url"
+          echo '{ "body": ${{ github.event.pull_request.comments_url }} }'
           response=$(curl\
             -X POST \
             -H "Content-Type: application/vnd.github+json" \
