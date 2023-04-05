@@ -13,10 +13,15 @@ dbc_env = os.getenv("dbc_environment")
 
 if dbc_env == "dev" or dbc_env is None:
     # dev src file path
-    src_file_path = "conference-data-ap-south-1-landing-dev"
+    bucket = "conference-data-ap-south-1-landing-dev/"
+    src_file_path = bucket + 'input/'
+elif dbc_env == 'stage':
+    bucket = "conference-data-ap-south-1-landing-stage/"
+    src_file_path = bucket + 'input/'
 else:
     # Production src file
-    src_file_path = "conference-data-ap-south-1-landing-prod"
+    bucket = "conference-data-ap-south-1-landing-prod/"
+    src_file_path = bucket + 'input/'
 
 EVENT = "event.csv"
 SESSION = "session.csv"
