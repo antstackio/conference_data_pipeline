@@ -44,16 +44,18 @@ jobs:
 
       - name: Wait for the test job to finish
         run: |
+          echo ${{ env.test_job_run_id }}
           run_status=0
           echo "$run_status"
           while [ "$run_status" -ne 1 ]
           do
             url="$DATABRICKS_HOST/api/2.1/jobs/runs/get-output"
+            echo $url
             response=$(curl -sSG -H 'content-type: application/json' \
             -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
             $url \
             -d run_id=${{ env.test_job_run_id}})
-            echo ""$(echo "$response" | jq '.state.life_cycle_state')" : "$(echo "$response" | jq '.run_page_url')""
+            echo "$(echo "$response" | jq '.state.life_cycle_state')" : "$(echo "$response" | jq '.run_page_url')"
             status="$(echo "$response" | jq '.state.result_state')"
             if [ "$status" == "\"SUCCESS\"" ]; then
               echo "$status"
