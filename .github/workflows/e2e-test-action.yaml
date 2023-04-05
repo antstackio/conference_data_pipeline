@@ -53,6 +53,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
             $url)
             status="$response" | jq '.state | select(.result_state)'
+            echo "$status"
             if [ ! -z "$status" ]; then
               run_status=1
             fi
