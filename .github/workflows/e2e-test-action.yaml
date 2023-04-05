@@ -51,12 +51,10 @@ jobs:
           while [ "$run_status" -ne 1 ]
           do
             url="$DATABRICKS_HOST/api/2.1/jobs/runs/get"
-            echo $url
             response=$(curl -sSG -H 'content-type: application/json' \
             -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
             $url \
             -d run_id=${{ steps.run-e2e-test.outputs.test_run_id }})
-            echo "$response"
             echo "$(echo "$response" | jq '.state.life_cycle_state')" : "$(echo "$response" | jq '.run_page_url')"
             status="$(echo "$response" | jq '.state.result_state')"
             if [ "$status" == "\"SUCCESS\"" ]; then
