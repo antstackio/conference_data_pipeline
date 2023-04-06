@@ -96,7 +96,7 @@ jobs:
 
       - name: Delete the test job
         run: |
-          url="$DATABRICKS_HOST/api/2.1/jobs/deletee"
+          url="$DATABRICKS_HOST/api/2.1/jobs/delete"
           echo $url
           response=$(curl -i -X POST -H 'content-type: application/json' \
           -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
