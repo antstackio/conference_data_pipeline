@@ -30,13 +30,15 @@ jobs:
           -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
           $url \
           -d @./tests/end_to_end_tests/e2e_job.json)
-          echo "$response"
+          response_body="$(echo "$response" | grep { )"
+          echo 'Response body => '"$response_body"
           response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)"
           echo 'Response status code: '"$response_code"
-          echo test_job_id="$(echo "$response" | jq '.job_id' )" >> $GITHUB_ENV
           if [ "$response_code" != "200" ]; then
             exit 1
-          fi;
+          fi
+          echo test_job_id="$(echo "$response_body" | jq '.job_id' )" >> $GITHUB_ENV
+
 
       - name: Run end to end tests
         id: run-e2e-test
@@ -47,13 +49,15 @@ jobs:
           -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
           $url \
           -d '{"job_id": ${{ env.test_job_id}}}')
-          echo "$response"
+          response_body="$(echo "$response" | grep { )"
+          echo 'Response body => '"$response_body"
           response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)";
           echo 'Response status code: '"$response_code"
-          echo test_run_id="$(echo "$response" | jq '.run_id' )" >> $GITHUB_OUTPUT
           if [ "$response_code" != "200" ]; then
             exit 1;
           fi
+          echo test_run_id="$(echo "$response_body" | jq '.run_id' )" >> $GITHUB_OUTPUT
+
 
       - name: Wait for the test job to finish
         id: wait-for-job-run
@@ -68,16 +72,17 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
             $url \
             -d run_id=${{ steps.run-e2e-test.outputs.test_run_id }})
+            response_body="$(echo "$response" | grep { )"
             response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)"
             echo 'Response status code: '"$response_code"
             if [ "$response_code" != "200" ]; then
               exit 1
             fi
-            echo "$(echo "$response" | jq '.state.life_cycle_state')" : "$(echo "$response" | jq '.run_page_url')"
-            status="$(echo "$response" | jq '.state.result_state')"
+            echo "$(echo "$response_body" | jq '.state.life_cycle_state')" : "$(echo "$response_body" | jq '.run_page_url')"
+            status="$(echo "$response_body" | jq '.state.result_state')"
             if [ "$status" == "\"SUCCESS\"" ]; then
               echo "$status"
-              echo test_job_run_url="$(echo "$response" | jq '.run_page_url')" >> $GITHUB_OUTPUT
+              echo test_job_run_url="$(echo "$response_body" | jq '.run_page_url')" >> $GITHUB_OUTPUT
               run_status=1;
             elif [ "$status" == "\"FAILED\"" ] || [ "$status" == "\"TIMEDOUT\"" ] || [ "$status" == "\"CANCELED\"" ]; then
               echo "$status"
