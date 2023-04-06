@@ -43,7 +43,7 @@ jobs:
       - name: Run end to end tests
         id: run-e2e-test
         run: | 
-          url="$DATABRICKS_HOST/api/2.1/jobs/run-now3"
+          url="$DATABRICKS_HOST/api/2.1/jobs/run-now"
           echo $url
           response=$(curl -i -X POST -H 'content-type: application/json' \
           -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
@@ -67,7 +67,7 @@ jobs:
           echo "$run_status"
           while [ "$run_status" -ne 1 ]
           do
-            url="$DATABRICKS_HOST/api/2.1/jobs/runs/get"
+            url="$DATABRICKS_HOST/api/2.1/jobs/runs/gete"
             response=$(curl -sSGi -H 'content-type: application/json' \
             -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
             $url \
@@ -75,6 +75,8 @@ jobs:
             response_body="$(echo "$response" | grep { )"
             response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)"
             if [ "$response_code" != "200" ]; then
+              echo 'Response body => '"$response_body"
+              echo 'Response status code: '"$response_code"
               exit 1
             fi
             echo "$(echo "$response_body" | jq '.state.life_cycle_state')" : "$(echo "$response_body" | jq '.run_page_url')"
