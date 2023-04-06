@@ -43,7 +43,7 @@ jobs:
       - name: Run end to end tests
         id: run-e2e-test
         run: | 
-          url="$DATABRICKS_HOST/api/2.1/jobs/run-now"
+          url="$DATABRICKS_HOST/api/2.1/jobs/run-now3"
           echo $url
           response=$(curl -i -X POST -H 'content-type: application/json' \
           -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
@@ -74,7 +74,6 @@ jobs:
             -d run_id=${{ steps.run-e2e-test.outputs.test_run_id }})
             response_body="$(echo "$response" | grep { )"
             response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)"
-            echo 'Response status code: '"$response_code"
             if [ "$response_code" != "200" ]; then
               exit 1
             fi
