@@ -10,6 +10,8 @@ jobs:
   deployment:
     runs-on: ubuntu-latest
     environment: dev
+    permissions:
+      pull-requests: write
     steps:
       - name: checkout repo
         uses: actions/checkout@v3
@@ -81,19 +83,24 @@ jobs:
           -d '{"job_id": ${{ env.test_job_id}}}')
           echo ${{ steps.wait-for-job-run.outputs.test_run_id }}
           echo "The output of the end to end job run: ${{ steps.wait-for-job-run.outputs.test_job_run_url }}" >> $GITHUB_STEP_SUMMARY
-      - name: Post the job output url to pr conversation
-        env:
-            URL: ${{ github.event.pull_request.comments_url }}
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo $URL
-          echo $GITHUB_TOKEN 
-          response=$(curl\
-            -X POST \
-            -H "Content-Type: application/vnd.github+json" \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            $URL \
-            -d '{ "body": \'${{ steps.wait-for-job-run.outputs.test_job_run_url }}\' }')
-            echo "$response"
-      
+      # - name: Post the job output url to pr conversation
+      #   env:
+      #       URL: ${{ github.event.pull_request.comments_url }}
+      #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     echo $URL
+      #     echo $GITHUB_TOKEN 
+      #     response=$(curl \
+      #       -X POST \
+      #       -H "Content-Type: application/vnd.github+json" \
+      #       -H "Authorization: Bearer $GITHUB_TOKEN" \
+      #       -H "X-GitHub-Api-Version: 2022-11-28" \
+      #       $URL \
+      #       -d '{ "body": ${{ steps.wait-for-job-run.outputs.test_job_run_url }}}')
+      #     echo "$response"
+        - name: add comment
+        - uses: mshick/add-pr-comment@v2
+          with:
+            message: |
+              The output of the end to end job run: ${{ steps.wait-for-job-run.outputs.test_job_run_url }}
+        
