@@ -35,7 +35,7 @@ jobs:
           echo 'Response status code: '"$response_code"
           if [ "$response_code" != "200" ]; then
             exit 1
-          fi
+          fi;
           echo test_job_id="$(echo "$response" | jq '.job_id' )" >> $GITHUB_ENV
 
       - name: Run end to end tests
@@ -48,10 +48,10 @@ jobs:
           $url \
           -d '{"job_id": ${{ env.test_job_id}}}')
           echo "$response"
-          # response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)"
+          # response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)";
           # echo 'Response status code: '"$response_code"
           # if [ "$response_code" != "200" ]; then
-          #   exit 1
+          #   exit 1;
           # fi
           echo test_run_id="$(echo "$response" | jq '.run_id' )" >> $GITHUB_OUTPUT
 
