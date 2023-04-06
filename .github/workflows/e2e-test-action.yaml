@@ -27,7 +27,7 @@ jobs:
           url="$DATABRICKS_HOST/api/2.1/jobs/create"
           echo $url
           response=$(curl -i -X POST -H 'content-type: application/json' \
-          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN_TEST }}" \
           $url \
           -d @./tests/end_to_end_tests/e2e_job.json)
           response_body="$(echo "$response" | grep { )"
@@ -46,7 +46,7 @@ jobs:
           url="$DATABRICKS_HOST/api/2.1/jobs/run-now"
           echo $url
           response=$(curl -i -X POST -H 'content-type: application/json' \
-          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN_TEST }}" \
           $url \
           -d '{"job_id": ${{ env.test_job_id}}}')
           response_body="$(echo "$response" | grep { )"
@@ -69,7 +69,7 @@ jobs:
           do
             url="$DATABRICKS_HOST/api/2.1/jobs/runs/get"
             response=$(curl -sSGi -H 'content-type: application/json' \
-            -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+            -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN_TEST }}" \
             $url \
             -d run_id=${{ steps.run-e2e-test.outputs.test_run_id }})
             response_body="$(echo "$response" | grep { )"
@@ -99,7 +99,7 @@ jobs:
           url="$DATABRICKS_HOST/api/2.1/jobs/delete"
           echo $url
           response=$(curl -i -X POST -H 'content-type: application/json' \
-          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN_TEST }}" \
           $url \
           -d '{"job_id": ${{ env.test_job_id}}}')
           response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)"
