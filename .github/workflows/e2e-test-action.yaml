@@ -33,7 +33,7 @@ jobs:
           echo "$response"
           response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)"
           echo 'Response status code: '"$response_code"
-          if [[ "$response_code" -ne "200"]]; then
+          if [ "$response_code" != "200"]; then
             exit 1
           fi
           echo test_job_id="$(echo "$response" | jq '.job_id' )" >> $GITHUB_ENV
