@@ -4,7 +4,7 @@ on:
     branches:
       - dev
 env:
-  DATABRICKS_HOST: https://dbc-89c9e463-7ff5.cloud.databricks.com
+  DATABRICKS_HOST: https://dbc-aa3a886f-298b.cloud.databricks.com
 
 jobs:
   e2e-test:

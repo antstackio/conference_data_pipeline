@@ -3,8 +3,7 @@ import os
 
 # COMMAND ----------
 
-# dbc_env = os.getenv("dbc_environment")
-dbc_env = "stage"
+dbc_env = os.getenv("dbc_environment")
 
 if dbc_env == "dev" or dbc_env is None:
     # dev src file path
