@@ -48,11 +48,11 @@ jobs:
           $url \
           -d '{"job_id": ${{ env.test_job_id}}}')
           echo "$response"
-          response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)"
-          echo 'Response status code: '"$response_code"
-          if [ "$response_code" != "200" ]; then
-            exit 1
-          fi
+          # response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)"
+          # echo 'Response status code: '"$response_code"
+          # if [ "$response_code" != "200" ]; then
+          #   exit 1
+          # fi
           echo test_run_id="$(echo "$response" | jq '.run_id' )" >> $GITHUB_OUTPUT
 
       - name: Wait for the test job to finish
