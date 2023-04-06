@@ -67,7 +67,7 @@ jobs:
           echo "$run_status"
           while [ "$run_status" -ne 1 ]
           do
-            url="$DATABRICKS_HOST/api/2.1/jobs/runs/gete"
+            url="$DATABRICKS_HOST/api/2.1/jobs/runs/get"
             response=$(curl -sSGi -H 'content-type: application/json' \
             -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
             $url \
@@ -96,7 +96,7 @@ jobs:
 
       - name: Delete the test job
         run: |
-          url="$DATABRICKS_HOST/api/2.1/jobs/delete"
+          url="$DATABRICKS_HOST/api/2.1/jobs/deletee"
           echo $url
           response=$(curl -i -X POST -H 'content-type: application/json' \
           -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
