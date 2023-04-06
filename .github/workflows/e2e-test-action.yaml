@@ -7,7 +7,7 @@ env:
   DATABRICKS_HOST: https://dbc-89c9e463-7ff5.cloud.databricks.com
 
 jobs:
-  deployment:
+  e2e-test:
     runs-on: ubuntu-latest
     environment: dev
     permissions:
