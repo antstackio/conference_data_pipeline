@@ -4,16 +4,61 @@
     "max_concurrent_runs": 1,
     "tasks": [
         {
-            "task_key": "e2e_pre_requisites",
+            "task_key": "schema_validation",
+            "depends_on": [
+                {
+                    "task_key": "e2e_pre_requisites"
+                }
+            ],
             "notebook_task": {
-                "notebook_path": "tests/end_to_end_tests/e2e_pre_requisites",
+                "notebook_path": "pipeline/00_conference_data_validate_schema",
                 "source": "GIT"
             },
             "job_cluster_key": "Job_cluster",
             "libraries": [
                 {
                     "pypi": {
+                        "package": " bamboolib"
+                    }
+                },
+                {
+                    "maven": {
+                        "coordinates": "com.amazon.deequ:deequ:2.0.2-spark-3.3"
+                    }
+                },
+                {
+                    "maven": {
+                        "coordinates": "com.crealytics:spark-excel_2.12:3.3.1_0.18.5"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "dlt"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "great_expectations"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "mlflow"
+                    }
+                },
+                {
+                    "pypi": {
                         "package": "pytest"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "pytest-cov"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "xlrd"
                     }
                 }
             ],
@@ -21,10 +66,206 @@
             "email_notifications": {}
         },
         {
+            "task_key": "source_to_raw",
+            "depends_on": [
+                {
+                    "task_key": "schema_validation"
+                }
+            ],
+            "notebook_task": {
+                "notebook_path": "pipeline/01_conference_data_source_to_raw",
+                "source": "GIT"
+            },
+            "job_cluster_key": "Job_cluster",
+            "libraries": [
+                {
+                    "pypi": {
+                        "package": " bamboolib"
+                    }
+                },
+                {
+                    "maven": {
+                        "coordinates": "com.amazon.deequ:deequ:2.0.2-spark-3.3"
+                    }
+                },
+                {
+                    "maven": {
+                        "coordinates": "com.crealytics:spark-excel_2.12:3.3.1_0.18.5"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "dlt"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "great_expectations"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "mlflow"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "pytest"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "pytest-cov"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "xlrd"
+                    }
+                }
+            ],
+            "timeout_seconds": 0,
+            "email_notifications": {}
+        },
+        {
+            "task_key": "raw_to_standardized",
+            "depends_on": [
+                {
+                    "task_key": "source_to_raw"
+                }
+            ],
+            "notebook_task": {
+                "notebook_path": "pipeline/02_conference_data_raw_to_standardized",
+                "source": "GIT"
+            },
+            "job_cluster_key": "Job_cluster",
+            "libraries": [
+                {
+                    "pypi": {
+                        "package": " bamboolib"
+                    }
+                },
+                {
+                    "maven": {
+                        "coordinates": "com.amazon.deequ:deequ:2.0.2-spark-3.3"
+                    }
+                },
+                {
+                    "maven": {
+                        "coordinates": "com.crealytics:spark-excel_2.12:3.3.1_0.18.5"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "dlt"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "great_expectations"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "mlflow"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "pytest"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "pytest-cov"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "xlrd"
+                    }
+                }
+            ],
+            "timeout_seconds": 0,
+            "email_notifications": {}
+        },
+        {
+            "task_key": "standardized_to_trusted",
+            "depends_on": [
+                {
+                    "task_key": "raw_to_standardized"
+                }
+            ],
+            "notebook_task": {
+                "notebook_path": "pipeline/03_conference_data_refined_trusted",
+                "source": "GIT"
+            },
+            "job_cluster_key": "Job_cluster",
+            "libraries": [
+                {
+                    "pypi": {
+                        "package": " bamboolib"
+                    }
+                },
+                {
+                    "maven": {
+                        "coordinates": "com.amazon.deequ:deequ:2.0.2-spark-3.3"
+                    }
+                },
+                {
+                    "maven": {
+                        "coordinates": "com.crealytics:spark-excel_2.12:3.3.1_0.18.5"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "dlt"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "great_expectations"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "mlflow"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "pytest"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "pytest-cov"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "xlrd"
+                    }
+                }
+            ],
+            "timeout_seconds": 0,
+            "email_notifications": {}
+        },
+        {
+            "task_key": "e2e_pre_requisites",
+            "notebook_task": {
+                "notebook_path": "tests/end_to_end_tests/e2e_pre_requisites",
+                "source": "GIT"
+            },
+            "job_cluster_key": "Job_cluster",
+            "timeout_seconds": 0,
+            "email_notifications": {}
+        },
+        {
             "task_key": "e2e_sanity",
             "depends_on": [
                 {
-                    "task_key": "e2e_pre_requisites"
+                    "task_key": "standardized_to_trusted"
                 }
             ],
             "notebook_task": {
@@ -35,7 +276,47 @@
             "libraries": [
                 {
                     "pypi": {
+                        "package": " bamboolib"
+                    }
+                },
+                {
+                    "maven": {
+                        "coordinates": "com.amazon.deequ:deequ:2.0.2-spark-3.3"
+                    }
+                },
+                {
+                    "maven": {
+                        "coordinates": "com.crealytics:spark-excel_2.12:3.3.1_0.18.5"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "dlt"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "great_expectations"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "mlflow"
+                    }
+                },
+                {
+                    "pypi": {
                         "package": "pytest"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "pytest-cov"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "xlrd"
                     }
                 }
             ],
@@ -62,7 +343,7 @@
                 },
                 "node_type_id": "m5d.large",
                 "spark_env_vars": {
-                    "dbc_env": "stage",
+                    "dbc_environment": "stage",
                     "GX_CLOUD_ACCESS_TOKEN": "c37fe93d10464cb8be08525cbf4c025b.V1.u48sTU2SGqb1n5Alkgbc43aIz_clrn3lliXebTcNeUVowUeHj8Xjo9Wy3c4_xOGfhwLty6P_TMiTtCVUuAHPqg",
                     "GX_CLOUD_ORGANIZATION_ID": "d2359ef8-0a32-46bd-8f4a-0d641f62c5d5",
                     "SPARK_VERSION": "3.3.0"
