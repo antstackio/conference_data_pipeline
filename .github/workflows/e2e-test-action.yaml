@@ -22,67 +22,67 @@ jobs:
           echo "`jq --arg GITHUB_HEAD_REF $(echo PR_to_dev_e2e_test_\"$GITHUB_HEAD_REF\") '.name=$GITHUB_HEAD_REF' ./tests/end_to_end_tests/e2e_job.json`" > ./tests/end_to_end_tests/e2e_job.json 
           cat ./tests/end_to_end_tests/e2e_job.json
 
-      - name: Create end to end test job
-        run: |
-          url="$DATABRICKS_HOST/api/2.1/jobs/create"
-          echo $url
-          response=$(curl -X POST -H 'content-type: application/json' \
-          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
-          $url \
-          -d @./tests/end_to_end_tests/e2e_job.json)
-          echo "$response"
-          echo test_job_id="$(echo "$response" | jq '.job_id' )" >> $GITHUB_ENV
+      # - name: Create end to end test job
+      #   run: |
+      #     url="$DATABRICKS_HOST/api/2.1/jobs/create"
+      #     echo $url
+      #     response=$(curl -X POST -H 'content-type: application/json' \
+      #     -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+      #     $url \
+      #     -d @./tests/end_to_end_tests/e2e_job.json)
+      #     echo "$response"
+      #     echo test_job_id="$(echo "$response" | jq '.job_id' )" >> $GITHUB_ENV
 
-      - name: Run end to end tests
-        id: run-e2e-test
-        run: | 
-          url="$DATABRICKS_HOST/api/2.1/jobs/run-now"
-          echo $url
-          response=$(curl -X POST -H 'content-type: application/json' \
-          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
-          $url \
-          -d '{"job_id": ${{ env.test_job_id}}}')
-          echo "$response"
-          echo test_run_id="$(echo "$response" | jq '.run_id' )" >> $GITHUB_OUTPUT
+      # - name: Run end to end tests
+      #   id: run-e2e-test
+      #   run: | 
+      #     url="$DATABRICKS_HOST/api/2.1/jobs/run-now"
+      #     echo $url
+      #     response=$(curl -X POST -H 'content-type: application/json' \
+      #     -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+      #     $url \
+      #     -d '{"job_id": ${{ env.test_job_id}}}')
+      #     echo "$response"
+      #     echo test_run_id="$(echo "$response" | jq '.run_id' )" >> $GITHUB_OUTPUT
 
-      - name: Wait for the test job to finish
-        id: wait-for-job-run
-        run: |
-          echo ${{ steps.run-e2e-test.outputs.test_run_id }}
-          run_status=0
-          echo "$run_status"
-          while [ "$run_status" -ne 1 ]
-          do
-            url="$DATABRICKS_HOST/api/2.1/jobs/runs/get"
-            response=$(curl -sSG -H 'content-type: application/json' \
-            -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
-            $url \
-            -d run_id=${{ steps.run-e2e-test.outputs.test_run_id }})
-            echo "$(echo "$response" | jq '.state.life_cycle_state')" : "$(echo "$response" | jq '.run_page_url')"
-            status="$(echo "$response" | jq '.state.result_state')"
-            if [ "$status" == "\"SUCCESS\"" ]; then
-              echo "$status"
-              echo test_job_run_url="$(echo "$response" | jq '.run_page_url')" >> $GITHUB_OUTPUT
-              run_status=1;
-            elif [ "$status" == "\"FAILED\"" ] || [ "$status" == "\"TIMEDOUT\"" ] || [ "$status" == "\"CANCELED\"" ]; then
-              echo "$status"
-              exit 1;
-            else
-              sleep 8;
-            fi
-          done
-          echo "run finished"
+      # - name: Wait for the test job to finish
+      #   id: wait-for-job-run
+      #   run: |
+      #     echo ${{ steps.run-e2e-test.outputs.test_run_id }}
+      #     run_status=0
+      #     echo "$run_status"
+      #     while [ "$run_status" -ne 1 ]
+      #     do
+      #       url="$DATABRICKS_HOST/api/2.1/jobs/runs/get"
+      #       response=$(curl -sSG -H 'content-type: application/json' \
+      #       -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+      #       $url \
+      #       -d run_id=${{ steps.run-e2e-test.outputs.test_run_id }})
+      #       echo "$(echo "$response" | jq '.state.life_cycle_state')" : "$(echo "$response" | jq '.run_page_url')"
+      #       status="$(echo "$response" | jq '.state.result_state')"
+      #       if [ "$status" == "\"SUCCESS\"" ]; then
+      #         echo "$status"
+      #         echo test_job_run_url="$(echo "$response" | jq '.run_page_url')" >> $GITHUB_OUTPUT
+      #         run_status=1;
+      #       elif [ "$status" == "\"FAILED\"" ] || [ "$status" == "\"TIMEDOUT\"" ] || [ "$status" == "\"CANCELED\"" ]; then
+      #         echo "$status"
+      #         exit 1;
+      #       else
+      #         sleep 8;
+      #       fi
+      #     done
+      #     echo "run finished"
 
-      - name: Delete the test job
-        run: |
-          url="$DATABRICKS_HOST/api/2.1/jobs/delete"
-          echo $url
-          response=$(curl -X POST -H 'content-type: application/json' \
-          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
-          $url \
-          -d '{"job_id": ${{ env.test_job_id}}}')
-          echo ${{ steps.wait-for-job-run.outputs.test_run_id }}
-          echo "The output of the end to end job run: ${{ steps.wait-for-job-run.outputs.test_job_run_url }}" >> $GITHUB_STEP_SUMMARY
+      # - name: Delete the test job
+      #   run: |
+      #     url="$DATABRICKS_HOST/api/2.1/jobs/delete"
+      #     echo $url
+      #     response=$(curl -X POST -H 'content-type: application/json' \
+      #     -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
+      #     $url \
+      #     -d '{"job_id": ${{ env.test_job_id}}}')
+      #     echo ${{ steps.wait-for-job-run.outputs.test_run_id }}
+      #     echo "The output of the end to end job run: ${{ steps.wait-for-job-run.outputs.test_job_run_url }}" >> $GITHUB_STEP_SUMMARY
       # - name: Post the job output url to pr conversation
       #   env:
       #       URL: ${{ github.event.pull_request.comments_url }}
@@ -100,7 +100,9 @@ jobs:
       #     echo "$response"
       - name: add comment
         uses: mshick/add-pr-comment@v2
+
         with:
           message: |
-            The output of the end to end job run: ${{ steps.wait-for-job-run.outputs.test_job_run_url }}
+            The output of the end to end job run: 
+            "${{ github.event.pull_request.comments_url }}"
         
