@@ -89,7 +89,7 @@ jobs:
               echo "$status"
               exit 1;
             else
-              sleep 8;
+              sleep 15;
             fi
           done
           echo "run finished"
