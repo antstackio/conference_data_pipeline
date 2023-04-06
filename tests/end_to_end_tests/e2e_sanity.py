@@ -1,8 +1,4 @@
 # Databricks notebook source
-spark
-
-# COMMAND ----------
-
 import os
 
 # COMMAND ----------

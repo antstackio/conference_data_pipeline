@@ -19,7 +19,7 @@ jobs:
         run: |
           echo $GITHUB_HEAD_REF
           echo "`jq --arg GITHUB_HEAD_REF $(echo $GITHUB_HEAD_REF) '.git_source.git_branch=$GITHUB_HEAD_REF' ./tests/end_to_end_tests/e2e_job.json`" > ./tests/end_to_end_tests/e2e_job.json 
-          echo "`jq --arg GITHUB_HEAD_REF $(echo PR_to_dev_e2e_test_\"$GITHUB_HEAD_REF\") '.name=$GITHUB_HEAD_REF' ./tests/end_to_end_tests/e2e_job.json`" > ./tests/end_to_end_tests/e2e_job.json 
+          echo "`jq --arg GITHUB_HEAD_REF $(echo PR_to_dev_e2e_test_\"$GITHUB_HEAD_REF\"_\"$(date +'%Y-%m-%d_%H-%M-%S')\") '.name=$GITHUB_HEAD_REF' ./tests/end_to_end_tests/e2e_job.json`" > ./tests/end_to_end_tests/e2e_job.json 
           cat ./tests/end_to_end_tests/e2e_job.json
 
       - name: Create end to end test job
