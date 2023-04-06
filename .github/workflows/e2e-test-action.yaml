@@ -24,13 +24,15 @@ jobs:
 
       - name: Create end to end test job
         run: |
-          url="$DATABRICKS_HOST/api/2.1/jobs/createw"
+          url="$DATABRICKS_HOST/api/2.1/jobs/create"
           echo $url
           response=$(curl -i -X POST -H 'content-type: application/json' \
           -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
           $url \
           -d @./tests/end_to_end_tests/e2e_job.json)
           echo "$response"
+          response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)"
+          echo "$response_code"
           echo test_job_id="$(echo "$response" | jq '.job_id' )" >> $GITHUB_ENV
 
       # - name: Run end to end tests
