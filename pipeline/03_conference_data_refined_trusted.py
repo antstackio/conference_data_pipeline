@@ -443,8 +443,8 @@ registrants_df.createOrReplaceTempView("new_attendee_master_temp_view")
 # MAGIC from
 # MAGIC   conference_trusted.session_dim
 # MAGIC where
-# MAGIC   create_date = '2023-03-23'
-# MAGIC   or modified_date = '2023-03-23';
+# MAGIC   create_date = current_date
+# MAGIC   or modified_date = current_date;
 
 # COMMAND ----------
 
@@ -743,8 +743,8 @@ poll_questions_df.createOrReplaceTempView("polling_questions_master_temp_view")
 # MAGIC   and t.poll_question = 'How would you like to rate the session out of five?'
 # MAGIC   left join session_dim_temp_view s on s.session_title = t.session_title
 # MAGIC where
-# MAGIC   q.create_date = '2023-03-24'
-# MAGIC   or q.modified_date = '2023-03-24'
+# MAGIC   q.create_date = current_date
+# MAGIC   or q.modified_date = current_date
 
 # COMMAND ----------
 
