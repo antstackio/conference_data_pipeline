@@ -99,7 +99,7 @@ jobs:
       #       -d '{ "body": ${{ steps.wait-for-job-run.outputs.test_job_run_url }}}')
       #     echo "$response"
       - name: add comment
-      - uses: mshick/add-pr-comment@v2
+        uses: mshick/add-pr-comment@v2
         with:
           message: |
             The output of the end to end job run: ${{ steps.wait-for-job-run.outputs.test_job_run_url }}
