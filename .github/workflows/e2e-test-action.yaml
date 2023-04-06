@@ -33,27 +33,27 @@ jobs:
           echo "$response"
           response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)"
           echo 'Response status code: '"$response_code"
+          echo test_job_id="$(echo "$response" | jq '.job_id' )" >> $GITHUB_ENV
           if [ "$response_code" != "200" ]; then
             exit 1
           fi;
-          echo test_job_id="$(echo "$response" | jq '.job_id' )" >> $GITHUB_ENV
 
       - name: Run end to end tests
         id: run-e2e-test
         run: | 
           url="$DATABRICKS_HOST/api/2.1/jobs/run-now"
           echo $url
-          response=$(curl -X POST -H 'content-type: application/json' \
+          response=$(curl -i -X POST -H 'content-type: application/json' \
           -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN }}" \
           $url \
           -d '{"job_id": ${{ env.test_job_id}}}')
           echo "$response"
-          # response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)";
-          # echo 'Response status code: '"$response_code"
-          # if [ "$response_code" != "200" ]; then
-          #   exit 1;
-          # fi
+          response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)";
+          echo 'Response status code: '"$response_code"
           echo test_run_id="$(echo "$response" | jq '.run_id' )" >> $GITHUB_OUTPUT
+          if [ "$response_code" != "200" ]; then
+            exit 1;
+          fi
 
       - name: Wait for the test job to finish
         id: wait-for-job-run
