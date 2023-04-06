@@ -104,5 +104,5 @@ jobs:
         with:
           message: |
             The output of the end to end job run: 
-            "${{ github.event.pull_request.comments_url }}"
+            `sed -e 's/^"//' -e 's/"$//' <<<"${{ github.event.pull_request.comments_url }}"`
         
