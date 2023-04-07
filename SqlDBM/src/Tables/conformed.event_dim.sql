@@ -3,7 +3,7 @@
 
 
 -- ************************************** conformed.event_dim
-CREATE TABLE conformed.event_dim
+CREATE TABLE IF NOT EXISTS conformed.event_dim
 (
  event_id      bigint NOT NULL,
  event_name    string NOT NULL,
@@ -17,6 +17,6 @@ CREATE TABLE conformed.event_dim
  country       string NOT NULL,
  create_date   date NOT NULL,
  create_user   string NOT NULL,
- modified_date string NOT NULL,
- modified_user string NOT NULL
+ modified_date DATE,
+ modified_user string
 );

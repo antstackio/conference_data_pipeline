@@ -3,7 +3,7 @@
 
 
 -- ************************************** conformed.attendee_session_fact
-CREATE TABLE conformed.attendee_session_fact
+CREATE TABLE IF NOT EXISTS conformed.attendee_session_fact
 (
  session_id             bigint NOT NULL,
  session_title          string NOT NULL,
