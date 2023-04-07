@@ -106,7 +106,9 @@ with open("../SqlDBM/src/Tables/conference_trusted.attendee_session_fact.sql") a
 
 # COMMAND ----------
 
-
+with open("../SqlDBM/src/Tables/conference_trusted.event_attendee_fact.sql") as file:
+    ddl = file.read()
+    spark.sql(ddl)
 
 # COMMAND ----------
 
