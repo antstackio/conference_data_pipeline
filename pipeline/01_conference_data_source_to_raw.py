@@ -203,4 +203,14 @@ questions_target_df.write.format("delta").mode(MODE).saveAsTable(
 
 # COMMAND ----------
 
+try:
+    mvCommand = f'aws s3 mv s3://{src_file_path} s3://{bucket}processed/ --recursive --acl bucket-owner-full-control'
+    print(mvCommand)
+    resp = os.system(mvCommand)
+    print(resp)
+except Exception as e:
+    print(e)
+
+# COMMAND ----------
+
 
