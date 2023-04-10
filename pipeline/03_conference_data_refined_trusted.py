@@ -106,7 +106,9 @@ with open("../SqlDBM/src/Tables/conference_trusted.attendee_session_fact.sql") a
 
 # COMMAND ----------
 
-
+with open("../SqlDBM/src/Tables/conference_trusted.event_attendee_fact.sql") as file:
+    ddl = file.read()
+    spark.sql(ddl)
 
 # COMMAND ----------
 
@@ -196,7 +198,7 @@ registrants_df = spark.sql(
     lower(session_title) as session_title,
     attendee_type,
     create_user
-  from conference_refined.registrant r left join default.states s on s.Abbreviation = r.state where r.is_processed is false"""
+  from conference_refined.registrant where is_processed is false"""
 )
 
 # COMMAND ----------
