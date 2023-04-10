@@ -3,6 +3,17 @@ import os
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC 
+# MAGIC # Clean Up
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Move files back to the input location
+
+# COMMAND ----------
+
 dbc_env = os.getenv("dbc_environment")
 
 if dbc_env == "dev" or dbc_env is None:
@@ -27,3 +38,27 @@ try:
     print(resp)
 except Exception as e:
     print(e)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC 
+# MAGIC ### Delete the databases and tables
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC 
+# MAGIC DELETE DATABASE conference_raw CASCADE
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC 
+# MAGIC DELETE DATABASE conference_refined CASCADE
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC 
+# MAGIC DELETE DATABASE conference_trusted CASCADE
