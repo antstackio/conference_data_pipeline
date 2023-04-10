@@ -191,7 +191,7 @@ registrants_df = spark.sql(
     lower(first_name) as first_name,
     lower(last_name) as last_name,
     lower(job_role) as job_role,
-    lower(s.State) as state,
+    lower(state) as state,
     email_address,
     login_time,
     logout_time,
