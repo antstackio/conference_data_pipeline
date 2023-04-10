@@ -13,12 +13,18 @@ if dbc_env == "dev" or dbc_env is None:
     sfPassword = dbutils.secrets.get("sf-conference-secrets", "password-dev")  
     sfRole = "PROGRAMMATIC_ACCESS_ROLE_DEV"
     sfWarehouse = "DEV"
-else:
+elif dbc_env == 'stage':
     sfDatabase = "CONFERENCE_STAGE"
     sfUser = dbutils.secrets.get("sf-conference-secrets", "username-stage")
     sfPassword = dbutils.secrets.get("sf-conference-secrets", "password-stage")  
-    sfRole = "PROGRAMMATIC_ACCESS_ROLE_DEV"
+    sfRole = "PROGRAMMATIC_ACCESS_ROLE_STAGE"
     sfWarehouse = "STAGE"
+else:
+    sfDatabase = "CONFERENCE_PROD"
+    sfUser = dbutils.secrets.get("sf-conference-secrets", "username-prod")
+    sfPassword = dbutils.secrets.get("sf-conference-secrets", "password-prod")  
+    sfRole = "PROGRAMMATIC_ACCESS_ROLE_PROD"
+    sfWarehouse = "PROD"
 
 def snowflake_options(env):
     schema = "CORE" if env == 'raw' else "CONFORMED"
