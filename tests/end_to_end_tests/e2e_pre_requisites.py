@@ -1,19 +1,19 @@
 # Databricks notebook source
 # MAGIC %sql
 # MAGIC 
-# MAGIC DELETE DATABASE conference_raw CASCADE
+# MAGIC DROP DATABASE conference_raw CASCADE
 
 # COMMAND ----------
 
 # MAGIC %sql
 # MAGIC 
-# MAGIC DELETE DATABASE conference_refined CASCADE
+# MAGIC DROP DATABASE conference_refined CASCADE
 
 # COMMAND ----------
 
 # MAGIC %sql
 # MAGIC 
-# MAGIC DELETE DATABASE conference_trusted CASCADE
+# MAGIC DROP DATABASE conference_trusted CASCADE
 
 # COMMAND ----------
 
