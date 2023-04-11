@@ -1,8 +1,5 @@
 # Databricks notebook source
 # MAGIC %pip install great_expectations
-
-# COMMAND ----------
-
 # MAGIC %pip install sqlalchemy
 # MAGIC %pip install snowflake-connector-python
 # MAGIC %pip install snowflake-sqlalchemy
@@ -11,12 +8,10 @@
 
 import os
 import great_expectations as gx
+from great_expectations.core.batch import BatchRequest, RuntimeBatchRequest
+from pyspark.dbutils import DBUtils
 
-os.environ["GX_CLOUD_BASE_URL"] = "https://api.greatexpectations.io"
-
-# COMMAND ----------
-
-context = gx.get_context()
+dbutils = DBUtils()
 
 # COMMAND ----------
 
@@ -24,8 +19,13 @@ dbc_env = os.getenv('dbc_environment')
 
 # COMMAND ----------
 
-from pyspark.dbutils import DBUtils
-dbutils = DBUtils()
+os.environ["GX_CLOUD_ORGANIZATION_ID"] = dbutils.secrets.get("gx-cloud-secrets", "org-id")
+os.environ["GX_CLOUD_ACCESS_TOKEN"] = dbutils.secrets.get("gx-cloud-secrets", "user-token")
+
+
+# COMMAND ----------
+
+context = gx.get_context()
 
 # COMMAND ----------
 
@@ -46,13 +46,21 @@ else:
 
 # COMMAND ----------
 
+print(snowflake_connection)
+
+# COMMAND ----------
+
+print(context)
+
+# COMMAND ----------
+
 # Create a Datasource
     
 # Define a Datasource YAML Config:
 # by modifying the following YAML configuration
 
 datasource_yaml = f"""
-name: snowflake_datasource
+name: snowflake
 class_name: Datasource
 execution_engine:
     class_name: SqlAlchemyExecutionEngine
@@ -112,12 +120,12 @@ context.save_expectation_suite(expectation_suite)
 
 # COMMAND ----------
 
-from great_expectations.core.batch import BatchRequest, RuntimeBatchRequest
+
 
 # COMMAND ----------
 
 run_time_batch_request = RuntimeBatchRequest(
-    datasource_name="snowflake_datasource",
+    datasource_name="snowflake",
     data_connector_name="default_runtime_data_connector_name",
     data_asset_name="conference.event_registrant.asset",  # this can be anything that identifies this data
     runtime_parameters={
