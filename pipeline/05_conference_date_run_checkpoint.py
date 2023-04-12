@@ -23,7 +23,17 @@ context = gx.get_context()
 
 # COMMAND ----------
 
-checkpoint = context.get_checkpoint(name='conference_data_checkpoint_v1')
+dbc_env = os.getenv('dbc_environment')
+
+# COMMAND ----------
+
+if dbc_env == 'dev' or dbc_env is None:
+    checkpoint = context.get_checkpoint(name='conference_data_checkpoint_v1')
+elif dbc_env == 'stage':
+    checkpoint = context.get_checkpoint(name='conference_data_checkpoint_stage_v1')
+else:
+    pass
+
 
 # COMMAND ----------
 
