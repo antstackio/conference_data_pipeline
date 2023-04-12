@@ -1,9 +1,21 @@
 # Databricks notebook source
+# MAGIC %pip install sqlalchemy
+# MAGIC %pip install snowflake-connector-python
+# MAGIC %pip install snowflake-sqlalchemy
+
+# COMMAND ----------
+
 import os
 import great_expectations as gx
-from pyspark.sql.functions import current_date
+from pyspark.dbutils import DBUtils
 
+dbutils = DBUtils()
 os.environ["GX_CLOUD_BASE_URL"] = "https://api.greatexpectations.io"
+
+# COMMAND ----------
+
+os.environ["GX_CLOUD_ORGANIZATION_ID"] = dbutils.secrets.get("gx-cloud-secrets", "org-id")
+os.environ["GX_CLOUD_ACCESS_TOKEN"] = dbutils.secrets.get("gx-cloud-secrets", "user-token")
 
 # COMMAND ----------
 
@@ -11,25 +23,11 @@ context = gx.get_context()
 
 # COMMAND ----------
 
-attendee_dim_df = spark.read.table('conference_refined.event_registrant_dim')
-attendee_dim_df = attendee_dim_df.filter(attendee_dim_df.create_date == current_date())
+checkpoint = context.get_checkpoint(name='conference_data_checkpoint_v1')
 
 # COMMAND ----------
 
-checkpoint = context.get_checkpoint(name='conference_attendee_dim_ex_checkpoint')
-print(checkpoint)
-
-# COMMAND ----------
-
-batch_request = {
-    "runtime_parameters": {
-        "batch_data": attendee_dim_df
-    },
-    "batch_identifiers": {
-        "attendee_dim_batch_idf": "initial_data"
-    }
-}
-context.run_checkpoint(ge_cloud_id=checkpoint.ge_cloud_id, batch_request=batch_request)
+context.run_checkpoint(ge_cloud_id=checkpoint.ge_cloud_id)
 
 # COMMAND ----------
 
