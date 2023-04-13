@@ -32,7 +32,7 @@ if dbc_env == 'dev' or dbc_env is None:
 elif dbc_env == 'stage':
     checkpoint = context.get_checkpoint(name='conference_data_checkpoint_stage_v1')
 else:
-    pass
+    checkpoint = context.get_checkpoint(name='conference_data_checkpoint_prod_v1') # Doesn't exist
 
 
 # COMMAND ----------

@@ -20,6 +20,10 @@ dbc_env = os.getenv('dbc_environment')
 
 # COMMAND ----------
 
+print(dbc_env)
+
+# COMMAND ----------
+
 os.environ["GX_CLOUD_ORGANIZATION_ID"] = dbutils.secrets.get("gx-cloud-secrets", "org-id")
 os.environ["GX_CLOUD_ACCESS_TOKEN"] = dbutils.secrets.get("gx-cloud-secrets", "user-token")
 
@@ -43,7 +47,15 @@ elif dbc_env == "stage":
     warehouse = "STAGE"
     snowflake_connection = f"""snowflake://{username}:{password}@kwtqhde-zi48131/CONFERENCE_STAGE/CONFORMED?warehouse={warehouse}&role={role}&application=great_expectations_cloud"""
 else:
-    pass
+    username = dbutils.secrets.get("sf-conference-secrets", "username-prod")
+    password = dbutils.secrets.get("sf-conference-secrets", "password-prod")
+    role = "PROGRAMMATIC_ACCESS_ROLE_PROD"
+    warehouse = "PROD"
+    snowflake_connection = f"""snowflake://{username}:{password}@kwtqhde-zi48131/CONFERENCE_PROD/CONFORMED?warehouse={warehouse}&role={role}&application=great_expectations_cloud"""
+
+# COMMAND ----------
+
+print(snowflake_connection)
 
 # COMMAND ----------
 
@@ -52,24 +64,42 @@ else:
 # Define a Datasource YAML Config:
 # by modifying the following YAML configuration
 
-datasource_yaml = f"""
-name: snowflake_dev
-class_name: Datasource
-execution_engine:
-    class_name: SqlAlchemyExecutionEngine
-    connection_string: {snowflake_connection}
-data_connectors:
-    default_runtime_data_connector_name:
-        class_name: RuntimeDataConnector
-        batch_identifiers:
-            - event_dim_batch
-            - session_dim_batch
-            - event_registrant_dim_batch
-    default_inferred_data_connector_name:
-        class_name: InferredAssetSqlDataConnector
-        include_schema_name: true
-"""
-
+if dbc_env == 'dev':
+    datasource_yaml = f"""
+    name: snowflake_dev
+    class_name: Datasource
+    execution_engine:
+        class_name: SqlAlchemyExecutionEngine
+        connection_string: {snowflake_connection}
+    data_connectors:
+        default_runtime_data_connector_name:
+            class_name: RuntimeDataConnector
+            batch_identifiers:
+                - event_dim_batch
+                - session_dim_batch
+                - event_registrant_dim_batch
+        default_inferred_data_connector_name:
+            class_name: InferredAssetSqlDataConnector
+            include_schema_name: true
+    """
+elif dbc_env == 'stage':
+    datasource_yaml = f"""
+    name: snowflake_stage
+    class_name: Datasource
+    execution_engine:
+        class_name: SqlAlchemyExecutionEngine
+        connection_string: {snowflake_connection}
+    data_connectors:
+        default_runtime_data_connector_name:
+            class_name: RuntimeDataConnector
+            batch_identifiers:
+                - event_dim_batch
+                - session_dim_batch
+                - event_registrant_dim_batch
+        default_inferred_data_connector_name:
+            class_name: InferredAssetSqlDataConnector
+            include_schema_name: true
+    """
 # Test your configuration (Optional):
 datasource = context.test_yaml_config(datasource_yaml)
 
@@ -88,7 +118,7 @@ print(existing_datasource.config)
 # COMMAND ----------
 
 event_expectation_suite = context.create_expectation_suite(
-    expectation_suite_name="conference_event_dim_ex_suite_dev"
+    expectation_suite_name="conference_event_dim_ex_suite_stage"
 )
 
 
@@ -128,7 +158,7 @@ event_expectation_suite.add_expectation(expectation_configuration)
 expectation_configuration = ExpectationConfiguration(
     expectation_type="expect_column_values_to_not_be_null",
     kwargs={
-      "column": 'zip_code',
+      "column": 'zipcode',
     }
   )
 event_expectation_suite.add_expectation(expectation_configuration)
@@ -151,11 +181,11 @@ context.save_expectation_suite(event_expectation_suite)
 # COMMAND ----------
 
 event_batch_request = RuntimeBatchRequest(
-    datasource_name="snowflake_dev",
+    datasource_name="snowflake_stage",
     data_connector_name="default_runtime_data_connector_name",
-    data_asset_name="conference.event_dim.asset",  # this can be anything that identifies this data
+    data_asset_name="conference.stage.event_dim.asset",  # this can be anything that identifies this data
     runtime_parameters={
-        "query": f"SELECT * from CONFORMED.EVENT_DIM"
+        "query": "SELECT * from CONFORMED.EVENT_DIM"
     },
     batch_identifiers={"event_dim_batch": "event_dim_batch"},
 )
@@ -168,7 +198,7 @@ event_batch_request = RuntimeBatchRequest(
 # COMMAND ----------
 
 session_expectation_suite = context.create_expectation_suite(
-    expectation_suite_name="conference_session_dim_ex_suite_dev"
+    expectation_suite_name="conference_session_dim_ex_suite_stage"
 )
 
 # COMMAND ----------
@@ -211,11 +241,11 @@ context.save_expectation_suite(session_expectation_suite)
 # COMMAND ----------
 
 session_batch_request = RuntimeBatchRequest(
-    datasource_name="snowflake_dev",
+    datasource_name="snowflake_stage",
     data_connector_name="default_runtime_data_connector_name",
-    data_asset_name="conference.session_dim.asset",  # this can be anything that identifies this data
+    data_asset_name="conference.stage.session_dim.asset",  # this can be anything that identifies this data
     runtime_parameters={
-        "query": f"SELECT * from CONFORMED.SESSION_DIM"
+        "query": "SELECT * from CONFORMED.SESSION_DIM"
     },
     batch_identifiers={"session_dim_batch": "session_dim_batch"},
 )
@@ -228,7 +258,7 @@ session_batch_request = RuntimeBatchRequest(
 # COMMAND ----------
 
 event_registrants_expectation_suite = context.create_expectation_suite(
-    expectation_suite_name="conference_event_registrants_dim_ex_suite_dev"
+    expectation_suite_name="conference_event_registrants_dim_ex_suite_stage"
 )
 
 
@@ -294,11 +324,11 @@ context.save_expectation_suite(event_registrants_expectation_suite)
 # COMMAND ----------
 
 event_registrant_batch_request = RuntimeBatchRequest(
-    datasource_name="snowflake_dev",
+    datasource_name="snowflake_stage",
     data_connector_name="default_runtime_data_connector_name",
-    data_asset_name="conference.event_registrant_dim.asset",  # this can be anything that identifies this data
+    data_asset_name="conference.stage.event_registrant_dim.asset",  # this can be anything that identifies this data
     runtime_parameters={
-        "query": f"SELECT * from CONFORMED.EVENT_REGISTRANT_DIM"
+        "query": "SELECT * from CONFORMED.EVENT_REGISTRANT_DIM"
     },
     batch_identifiers={"event_registrant_dim_batch": "event_registrant_dim_batch"},
 )
@@ -312,19 +342,19 @@ event_registrant_batch_request = RuntimeBatchRequest(
 
 # First, fetch the ExpectationSuite you will use to define a Validation
 event_expectation_suite = context.get_expectation_suite(
-    expectation_suite_name="conference_event_dim_ex_suite_dev"
+    expectation_suite_name="conference_event_dim_ex_suite_stage"
 )  # add your expectation suite name here
 
 session_expectation_suite = context.get_expectation_suite(
-    expectation_suite_name="conference_session_dim_ex_suite_dev"
+    expectation_suite_name="conference_session_dim_ex_suite_stage"
 )
 
 event_registrant_expectation_suite = context.get_expectation_suite(
-    expectation_suite_name="conference_event_registrants_dim_ex_suite_dev"
+    expectation_suite_name="conference_event_registrants_dim_ex_suite_stage"
 )
 
 
-checkpoint_name = "conference_data_checkpoint_v1"  # name your checkpoint here!
+checkpoint_name = "conference_data_checkpoint_stage_v1"  # name your checkpoint here!
 
 # uncomment the lines below after successfully creating your Checkpoint to run this code again!
 # checkpoint = context.get_checkpoint(checkpoint_name)

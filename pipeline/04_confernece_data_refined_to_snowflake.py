@@ -1,6 +1,6 @@
 # Databricks notebook source
 import pyspark.sql.functions as f
-from src.snowflake_credentials import *
+from src.snowflake_credentials import snowflake_options
 
 # COMMAND ----------
 
