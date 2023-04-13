@@ -3,7 +3,7 @@
 
 
 -- ************************************** conformed.event_attendee_fact
-CREATE TABLE conformed.event_attendee_fact
+CREATE TABLE IF NOT EXISTS conformed.event_attendee_fact
 (
  event_id         bigint NOT NULL,
  event_name       string NOT NULL,

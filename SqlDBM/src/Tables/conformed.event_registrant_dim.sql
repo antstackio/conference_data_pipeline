@@ -3,7 +3,7 @@
 
 
 -- ************************************** conformed.event_registrant_dim
-CREATE TABLE conformed.event_registrant_dim
+CREATE TABLE IF NOT EXISTS conformed.event_registrant_dim
 (
  attendee_id     bigint NOT NULL,
  event_id        bigint NOT NULL,
@@ -16,6 +16,6 @@ CREATE TABLE conformed.event_registrant_dim
  email_address   string NOT NULL,
  create_date     date NOT NULL,
  create_user     string NOT NULL,
- modified_date   date NOT NULL,
- modified_user   string NOT NULL
+ modified_date   date,
+ modified_user   string
 );

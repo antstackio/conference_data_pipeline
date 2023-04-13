@@ -3,7 +3,7 @@
 
 
 -- ************************************** conformed.satisfaction_rating
-CREATE TABLE conformed.satisfaction_rating
+CREATE TABLE IF NOT EXISTS conformed.satisfaction_rating
 (
  session_id    bigint NOT NULL,
  session_title string NOT NULL,
