@@ -314,6 +314,68 @@
             "email_notifications": {}
         },
         {
+            "task_key": "data_quality_check",
+            "depends_on": [
+                {
+                    "task_key": "trusted_to_snowflake"
+                }
+            ],
+            "notebook_task": {
+                "notebook_path": "pipeline/05_conference_date_run_checkpoint",
+                "source": "GIT"
+            },
+            "job_cluster_key": "Job_cluster",
+            "libraries": [
+                {
+                    "pypi": {
+                        "package": " bamboolib"
+                    }
+                },
+                {
+                    "maven": {
+                        "coordinates": "com.amazon.deequ:deequ:2.0.2-spark-3.3"
+                    }
+                },
+                {
+                    "maven": {
+                        "coordinates": "com.crealytics:spark-excel_2.12:3.3.1_0.18.5"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "dlt"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "great_expectations"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "mlflow"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "pytest"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "pytest-cov"
+                    }
+                },
+                {
+                    "pypi": {
+                        "package": "xlrd"
+                    }
+                }
+            ],
+            "timeout_seconds": 0,
+            "email_notifications": {}
+        },
+        {
             "task_key": "e2e_pre_requisites",
             "notebook_task": {
                 "notebook_path": "tests/end_to_end_tests/e2e_pre_requisites",
@@ -327,7 +389,7 @@
             "task_key": "e2e_sanity",
             "depends_on": [
                 {
-                    "task_key": "trusted_to_snowflake"
+                    "task_key": "data_quality_check"
                 }
             ],
             "notebook_task": {
