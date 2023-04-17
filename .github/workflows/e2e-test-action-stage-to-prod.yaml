@@ -1,0 +1,124 @@
+name: End to end test Stage to Prod
+on:
+  pull_request:
+    branches:
+      - master
+env:
+  DATABRICKS_HOST: https://dbc-aa3a886f-298b.cloud.databricks.com
+
+concurrency: 
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-test-stage-to-prod:
+    runs-on: ubuntu-latest
+    environment: prod
+    permissions:
+      pull-requests: write
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+      - name: Add github branch info to create job request body
+        run: |
+          echo $GITHUB_HEAD_REF
+          echo "`jq --arg GITHUB_HEAD_REF $(echo $GITHUB_HEAD_REF) '.git_source.git_branch=$GITHUB_HEAD_REF' ./tests/end_to_end_tests/e2e_job.json`" > ./tests/end_to_end_tests/e2e_job.json 
+          echo "`jq --arg GITHUB_HEAD_REF $(echo PR_to_dev_e2e_test_\"$GITHUB_HEAD_REF\"_\"$(date +'%Y-%m-%d_%H-%M-%S')\") '.name=$GITHUB_HEAD_REF' ./tests/end_to_end_tests/e2e_job.json`" > ./tests/end_to_end_tests/e2e_job.json 
+          cat ./tests/end_to_end_tests/e2e_job.json
+
+      - name: Create end to end test job
+        run: |
+          url="$DATABRICKS_HOST/api/2.1/jobs/create"
+          echo $url
+          response=$(curl -i -X POST -H 'content-type: application/json' \
+          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN_TEST }}" \
+          $url \
+          -d @./tests/end_to_end_tests/e2e_job.json)
+          response_body="$(echo "$response" | grep { )"
+          echo 'Response body => '"$response_body"
+          response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)"
+          echo 'Response status code: '"$response_code"
+          if [ "$response_code" != "200" ]; then
+            exit 1
+          fi
+          echo test_job_id="$(echo "$response_body" | jq '.job_id' )" >> $GITHUB_ENV
+
+
+      - name: Run end to end tests
+        id: run-e2e-test
+        run: | 
+          url="$DATABRICKS_HOST/api/2.1/jobs/run-now"
+          echo $url
+          response=$(curl -i -X POST -H 'content-type: application/json' \
+          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN_TEST }}" \
+          $url \
+          -d '{"job_id": ${{ env.test_job_id}}}')
+          response_body="$(echo "$response" | grep { )"
+          echo 'Response body => '"$response_body"
+          response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)";
+          echo 'Response status code: '"$response_code"
+          if [ "$response_code" != "200" ]; then
+            exit 1;
+          fi
+          echo test_run_id="$(echo "$response_body" | jq '.run_id' )" >> $GITHUB_OUTPUT
+
+
+      - name: Wait for the test job to finish
+        id: wait-for-job-run
+        run: |
+          echo ${{ steps.run-e2e-test.outputs.test_run_id }}
+          run_status=0
+          echo "$run_status"
+          while [ "$run_status" -ne 1 ]
+          do
+            url="$DATABRICKS_HOST/api/2.1/jobs/runs/get"
+            response=$(curl -sSGi -H 'content-type: application/json' \
+            -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN_TEST }}" \
+            $url \
+            -d run_id=${{ steps.run-e2e-test.outputs.test_run_id }})
+            response_body="$(echo "$response" | grep { )"
+            response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)"
+            if [ "$response_code" != "200" ]; then
+              echo 'Response body => '"$response_body"
+              echo 'Response status code: '"$response_code"
+              exit 1
+            fi
+            echo "$(echo "$response_body" | jq '.state.life_cycle_state')" : "$(echo "$response_body" | jq '.run_page_url')"
+            status="$(echo "$response_body" | jq '.state.result_state')"
+            if [ "$status" == "\"SUCCESS\"" ]; then
+              echo "$status"
+              echo test_job_run_url="$(echo "$response_body" | jq '.run_page_url')" >> $GITHUB_OUTPUT
+              run_status=1;
+            elif [ "$status" == "\"FAILED\"" ] || [ "$status" == "\"TIMEDOUT\"" ] || [ "$status" == "\"CANCELED\"" ]; then
+              echo "$status"
+              exit 1;
+            else
+              sleep 15;
+            fi
+          done
+          echo "run finished"
+
+      - name: Delete the test job
+        run: |
+          url="$DATABRICKS_HOST/api/2.1/jobs/delete"
+          echo $url
+          response=$(curl -i -X POST -H 'content-type: application/json' \
+          -H "Authorization: Bearer ${{ secrets.DATABRICKS_TOKEN_TEST }}" \
+          $url \
+          -d '{"job_id": ${{ env.test_job_id}}}')
+          response_code="$(echo "$response" | grep HTTP/2 | cut -d ' ' -f 2)"
+          echo 'Response status code: '"$response_code"
+          if [ "$response_code" != "200" ]; then
+            exit 1
+          fi
+          echo ${{ steps.wait-for-job-run.outputs.test_run_id }}
+          echo "The output of the end to end test run: ${{ steps.wait-for-job-run.outputs.test_job_run_url }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Post the job output url to pr conversation
+        uses: mshick/add-pr-comment@v2
+        with:
+          allow-repeats: true
+          message: |
+            The output of the end to end test run: 
+            ${{ steps.wait-for-job-run.outputs.test_job_run_url }}
+        
