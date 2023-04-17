@@ -2,7 +2,7 @@ name: End to end test Stage to Prod
 on:
   pull_request:
     branches:
-      - prod
+      - master
 env:
   DATABRICKS_HOST: https://dbc-aa3a886f-298b.cloud.databricks.com
 
