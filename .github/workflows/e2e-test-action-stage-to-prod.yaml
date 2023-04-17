@@ -1,15 +1,15 @@
-name: End to end test
+name: End to end test Stage to Prod
 on:
   pull_request:
     branches:
-      - dev
+      - prod
 env:
   DATABRICKS_HOST: https://dbc-aa3a886f-298b.cloud.databricks.com
 
 jobs:
-  e2e-test:
+  e2e-test-stage-to-prod:
     runs-on: ubuntu-latest
-    environment: dev
+    environment: prod
     permissions:
       pull-requests: write
     steps:
@@ -108,13 +108,13 @@ jobs:
             exit 1
           fi
           echo ${{ steps.wait-for-job-run.outputs.test_run_id }}
-          echo "The output of the end to end job run: ${{ steps.wait-for-job-run.outputs.test_job_run_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "The output of the end to end test run: ${{ steps.wait-for-job-run.outputs.test_job_run_url }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Post the job output url to pr conversation
         uses: mshick/add-pr-comment@v2
         with:
           allow-repeats: true
           message: |
-            The output of the end to end job run: 
+            The output of the end to end test run: 
             ${{ steps.wait-for-job-run.outputs.test_job_run_url }}
         
