@@ -6,6 +6,10 @@ on:
 env:
   DATABRICKS_HOST: https://dbc-aa3a886f-298b.cloud.databricks.com
 
+concurrency: 
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+
 jobs:
   e2e-test-feature-to-dev:
     runs-on: ubuntu-latest
