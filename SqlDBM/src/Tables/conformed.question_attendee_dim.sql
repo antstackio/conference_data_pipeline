@@ -3,7 +3,7 @@
 
 
 -- ************************************** conformed.question_attendee_dim
-CREATE TABLE conformed.question_attendee_dim
+CREATE TABLE IF NOT EXISTS conformed.question_attendee_dim
 (
  session_id    bigint NOT NULL,
  session_title string NOT NULL,

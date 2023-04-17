@@ -8,22 +8,28 @@ dbutils = DBUtils(spark)
 dbc_env = os.getenv("dbc_environment")
 
 if dbc_env == "dev" or dbc_env is None:
-    sfDatabase = "ANTSTACK_DEMO_DATABASE_DEV"
-    sfUser = dbutils.secrets.get("snowflake-secrets", "user-name")
-    sfPassword = dbutils.secrets.get("snowflake-secrets", "password")  
-    sfRole = "ANTSTACK_DEMO_ROLE_DEV"
-    sfWarehouse = "ANTSTACK_DEMO_DEV"
+    sfDatabase = "CONFERENCE_DEV"
+    sfUser = dbutils.secrets.get("sf-conference-secrets", "username-dev")
+    sfPassword = dbutils.secrets.get("sf-conference-secrets", "password-dev")  
+    sfRole = "PROGRAMMATIC_ACCESS_ROLE_DEV"
+    sfWarehouse = "DEV"
+elif dbc_env == 'stage':
+    sfDatabase = "CONFERENCE_STAGE"
+    sfUser = dbutils.secrets.get("sf-conference-secrets", "username-stage")
+    sfPassword = dbutils.secrets.get("sf-conference-secrets", "password-stage")  
+    sfRole = "PROGRAMMATIC_ACCESS_ROLE_STAGE"
+    sfWarehouse = "STAGE"
 else:
-    sfDatabase = "ANTSTACK_DEMO_DATABASE_PROD"
-    sfUser = dbutils.secrets.get("snowflake-secrets", "user-name-prod")
-    sfPassword = dbutils.secrets.get("snowflake-secrets", "password-prod")  
-    sfRole = "ANTSTACK_DEMO_ROLE_PROD"
-    sfWarehouse = "ANTSTACK_DEMO_PROD"
+    sfDatabase = "CONFERENCE_PROD"
+    sfUser = dbutils.secrets.get("sf-conference-secrets", "username-prod")
+    sfPassword = dbutils.secrets.get("sf-conference-secrets", "password-prod")  
+    sfRole = "PROGRAMMATIC_ACCESS_ROLE_PROD"
+    sfWarehouse = "PROD"
 
 def snowflake_options(env):
     schema = "CORE" if env == 'raw' else "CONFORMED"
     options = {
-    "sfUrl": "https://jgklkfv-hyb33129.snowflakecomputing.com",
+    "sfUrl": "https://kwtqhde-zi48131.snowflakecomputing.com",
     "sfUser": sfUser,
     "sfPassword": sfPassword,
     "sfDatabase": sfDatabase,
