@@ -1,6 +1,7 @@
 # Databricks notebook source
 from src.main import convert_date_object, read_data_from_raw
 from pyspark.sql import SparkSession
+from pyspark.dbutils import DBUtils
 from pyspark.sql.functions import (
     lit,
     current_timestamp,
@@ -17,6 +18,32 @@ from pyspark.sql.functions import (
 # COMMAND ----------
 
 spark = SparkSession.builder.getOrCreate()
+
+# COMMAND ----------
+
+dbutils = DBUtils(spark)
+
+# COMMAND ----------
+
+require_processing = dbutils.jobs.taskValues.get(
+    taskKey="schema_validation", key="execute_raw_layer", debugValue=True # Change it to False
+)
+if not require_processing:
+    dbutils.notebook.exit("File not found! exiting the notebook!")
+else:
+    print("Proceeding to execute current notebook!")
+
+# COMMAND ----------
+
+
+require_processing = dbutils.jobs.taskValues.get(
+    taskKey="source_to_raw", key="execute_refined_layer", debugValue=True # Change it to False
+)
+
+if not require_processing:
+    dbutils.notebook.exit("Failed to load one or more files in raw layer! exiting the notebook!")
+else:
+    print("Proceeding to execute current notebook!")  
 
 # COMMAND ----------
 
@@ -79,7 +106,9 @@ with open("../SqlDBM/src/Tables/conference_trusted.attendee_session_fact.sql") a
 
 # COMMAND ----------
 
-
+with open("../SqlDBM/src/Tables/conference_trusted.event_attendee_fact.sql") as file:
+    ddl = file.read()
+    spark.sql(ddl)
 
 # COMMAND ----------
 
@@ -162,14 +191,14 @@ registrants_df = spark.sql(
     lower(first_name) as first_name,
     lower(last_name) as last_name,
     lower(job_role) as job_role,
-    lower(s.State) as state,
+    lower(state) as state,
     email_address,
     login_time,
     logout_time,
     lower(session_title) as session_title,
     attendee_type,
     create_user
-  from conference_refined.registrant r left join default.states s on s.Abbreviation = r.state where r.is_processed is false"""
+  from conference_refined.registrant where is_processed is false"""
 )
 
 # COMMAND ----------
@@ -416,8 +445,8 @@ registrants_df.createOrReplaceTempView("new_attendee_master_temp_view")
 # MAGIC from
 # MAGIC   conference_trusted.session_dim
 # MAGIC where
-# MAGIC   create_date = '2023-03-23'
-# MAGIC   or modified_date = '2023-03-23';
+# MAGIC   create_date = current_date
+# MAGIC   or modified_date = current_date;
 
 # COMMAND ----------
 
@@ -716,8 +745,8 @@ poll_questions_df.createOrReplaceTempView("polling_questions_master_temp_view")
 # MAGIC   and t.poll_question = 'How would you like to rate the session out of five?'
 # MAGIC   left join session_dim_temp_view s on s.session_title = t.session_title
 # MAGIC where
-# MAGIC   q.create_date = '2023-03-24'
-# MAGIC   or q.modified_date = '2023-03-24'
+# MAGIC   q.create_date = current_date
+# MAGIC   or q.modified_date = current_date
 
 # COMMAND ----------
 

@@ -9,6 +9,10 @@ options = snowflake_options('trusted')
 
 # COMMAND ----------
 
+print(options)
+
+# COMMAND ----------
+
 drop_query = [
 "drop table if exists CONFORMED.ATTENDEE_SESSION_DIM;",
 "drop table if exists CONFORMED.EVENT_ATTENDEE_FACT;",

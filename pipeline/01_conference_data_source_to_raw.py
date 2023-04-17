@@ -11,6 +11,16 @@ dbutils = DBUtils(spark)
 
 # COMMAND ----------
 
+require_processing = dbutils.jobs.taskValues.get(
+    taskKey="schema_validation", key="execute_raw_layer"
+)
+if not require_processing:
+    dbutils.notebook.exit("File not found! exiting the notebook!")
+else:
+    print("Proceeding to execute current notebook!")
+
+# COMMAND ----------
+
 failed_to_load: list = []
 failed_to_add: list = []
 
@@ -138,7 +148,7 @@ if any(failed_to_add):
     dbutils.jobs.taskValues.set(key="execute_refined_layer", value=False)
     dbutils.notebook.exit("Failed to load one or more input files exiting the notebook!")
 else:
-  dbutils.jobs.taskValues.set(key="execute_refined_layer", value=True)
+    dbutils.jobs.taskValues.set(key="execute_refined_layer", value=True)
 
 # COMMAND ----------
 
@@ -190,6 +200,16 @@ questions_target_df.write.format("delta").mode(MODE).saveAsTable(
 
 # MAGIC %sql
 # MAGIC SELECT count(*) FROM conference_raw.polling_questions;
+
+# COMMAND ----------
+
+try:
+    mvCommand = f'aws s3 mv s3://{src_file_path} s3://{bucket}processed/ --recursive --acl bucket-owner-full-control'
+    print(mvCommand)
+    resp = os.system(mvCommand)
+    print(resp)
+except Exception as e:
+    print(e)
 
 # COMMAND ----------
 
