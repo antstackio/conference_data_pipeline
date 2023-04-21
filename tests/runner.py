@@ -18,7 +18,7 @@ print(os.getcwd())
 # Skip writing pyc files on a readonly filesystem.
 sys.dont_write_bytecode = True
 
-# Run pytest.
+# Run pytest. 
 retcode = pytest.main([".", "-s", "-vv", "-p", "no:cacheprovider", "--cov","--cov-report", "term"])
 
 # Fail the cell execution if there are any test failures.
